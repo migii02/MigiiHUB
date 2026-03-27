@@ -1,0 +1,316 @@
+-- ==== KOMPONEN TAB WEBHOOK & ESP ====
+Tabs.Webhook:AddParagraph({ Title = "ℹ️ Info Auto-Save", Content = "Pengaturan Webhook otomatis tersimpan. Tidak perlu memasukkannya kembali setelah Reconnect." })
+local whPlaceholder = "Paste Link Webhook Discord..."
+if webhookURL ~= "" then whPlaceholder = "Webhook terisi. Klik untuk mengubah link webhook" end
+Tabs.Webhook:AddTextBox({ Text = "Webhook URL", Placeholder = whPlaceholder, Callback = function(txt) if txt and txt ~= "" then webhookURL = txt;
+saveWebhookConfig(); sendNotification("✅ Webhook URL Disimpan!") end end })
+Tabs.Webhook:AddTextBox({ Text = "Webhook Interval (Menit)", Placeholder = "Contoh: 1", Callback = function(txt) local val = tonumber(txt); if val and val > 0 then webhookInterval = val else webhookInterval = 1 end; saveWebhookConfig(); sendNotification("✅ Interval Webhook Disimpan!") end })
+Tabs.Webhook:AddToggle({ Text = "📢 Auto Webhook", Default = isWebhookOn, Callback = function(v) isWebhookOn = v; saveWebhookConfig() end })
+Tabs.Webhook:AddButton({ Text = "🔔 Test Webhook", Callback = function() if webhookURL == "" then sendNotification("⚠️ Isi link webhook dulu!"); return end; sendNotification("⏳ Mengirim Test Webhook..."); task.spawn(function() local data = { ["username"] = "MIGII-HUB NOTIFICATION", ["avatar_url"] = WEBHOOK_IMAGE_URL, ["content"] = "✅ **Test Webhook Berhasil!** Halo " .. player.DisplayName .. ", webhook ini sudah siap digunakan." }; local success, response = pcall(function() return httprequest({Url = webhookURL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data)}) end);
+if success and response and (response.StatusCode == 200 or response.StatusCode == 204) then sendNotification("✅ Webhook terhubung ke Discord!") else sendNotification("❌ Gagal Terkirim: Link Discord tidak valid!") end end) end })
+
+local isESPKandangOn = false
+Tabs.ESP:AddToggle({ Text = "👁️ Tampilkan Status Kandang", Default = false, Callback = function(v) isESPKandangOn = v; if isESPKandangOn then task.spawn(function() while isESPKandangOn do local barnPlot = getPlot("Barn_Plot_"); if barnPlot then for i = 1, limitSapi do local cow = barnPlot:FindFirstChild("Cow_" .. tostring(i)); local slotMarkers = barnPlot:FindFirstChild("SlotMarkers"); local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local isReady = false; local milkVisual = barnPlot:FindFirstChild("MilkVisual_" .. tostring(i)); local milkPrompt = milkVisual and milkVisual:FindFirstChildWhichIsA("ProximityPrompt", true); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true); if (milkPrompt and milkPrompt.Enabled) or (feedPrompt and feedPrompt.Enabled) then isReady = true end;
+local timeText = ""; if not isReady and cow then timeText = getTimerText(cow) end;
+if cow then createOrUpdateESP(cow, "Sapi"..i, "Sapi " .. i, isReady, timeText, false) end end end; local coopPlot = getPlot("Coop_CoopPlot_");
+if coopPlot then for i = 1, 12 do local slotMarkers = coopPlot:FindFirstChild("SlotMarkers");
+local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local isReady = false; local eggVisual = coopPlot:FindFirstChild("EggVisual_" .. tostring(i));
+local eggPrompt = eggVisual and eggVisual:FindFirstChildWhichIsA("ProximityPrompt", true); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true);
+if (eggPrompt and eggPrompt.Enabled) or (feedPrompt and feedPrompt.Enabled) then isReady = true end; local timeText = "";
+if not isReady then local ayamModel = nil; for _, child in ipairs(coopPlot:GetChildren()) do if (string.find(string.lower(child.Name), "chicken") or string.find(string.lower(child.Name), "ayam")) and string.find(child.Name, tostring(i)) then ayamModel = child break end end;
+if ayamModel then timeText = getTimerText(ayamModel) end end; if slot then createOrUpdateESP(slot, "Ayam"..i, "Ayam " .. i, isReady, timeText, false) end end end;
+task.wait(1) end end) else hapusSemuaESP("ESP_Migii_Animal_") end end })
+
+local isESPTanamanOn = false
+Tabs.ESP:AddToggle({ Text = "🌿 Tampilkan Status Tanaman", Default = false, Callback = function(v) isESPTanamanOn = v; if isESPTanamanOn then task.spawn(function() local myUserId = tostring(player.UserId); while isESPTanamanOn do local activeCrops = workspace:FindFirstChild("ActiveCrops"); if activeCrops then for _, crop in ipairs(activeCrops:GetChildren()) do if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) then local isReady = crop:GetAttribute("IsReady") or false; local seedType = crop:GetAttribute("SeedType") or "Tanaman"; local plantedAt = crop:GetAttribute("PlantedAt") or 0; local growthTime = crop:GetAttribute("GrowthTime") or 0; local timeText = ""; if not isReady and plantedAt > 0 and growthTime > 0 then local currentTime = workspace:GetServerTimeNow(); local elapsed = currentTime - plantedAt; if elapsed < 0 then elapsed = os.time() - plantedAt end;
+local timeLeft = math.max(0, growthTime - elapsed); timeText = formatWaktu(timeLeft) end; createOrUpdateESP(crop, crop.Name, seedType, isReady, timeText, true) end end end;
+task.wait(1) end end) else hapusSemuaESP("ESP_Migii_Crop_") end end })
+
+-- ================= GLOBAL DATA LOOP (Memperbarui UI & Floating Dashboard) =================
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            local myUserId = tostring(player.UserId); local activeCrops = workspace:FindFirstChild("ActiveCrops"); local currentTotal = 0
+            
+            -- COUNTER LAHAN & HEWAN
+            local cropBiasaReady = 0; local cropBiasaTotal = 0
+            local cropBesarReady = 0; local cropBesarTotal = 0
+            local cropPrivateReady = 0; local cropPrivateTotal = 0
+            
+            local coopPlotGlobal = getPlot("Coop_CoopPlot_")
+            local areaPrivate = coopPlotGlobal and (coopPlotGlobal:FindFirstChild("AreaTanamBesarPrivate") or coopPlotGlobal:FindFirstChild("AreaTanamBesar"))
+            local posPrivate = areaPrivate and getCFrameFromObj(areaPrivate).Position
+            
+            if activeCrops then 
+                for _, crop in ipairs(activeCrops:GetChildren()) do 
+                    if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) then 
+                        currentTotal = currentTotal + 1 
+                        local isReady = crop:GetAttribute("IsReady") or false
+                        if isCropBesar(crop) then
+                            local cropPos = crop:IsA("Model") and crop:GetPivot().Position or crop.Position
+                            if posPrivate and (cropPos - posPrivate).Magnitude < 45 then
+                                cropPrivateTotal = cropPrivateTotal + 1
+                                if isReady then cropPrivateReady = cropPrivateReady + 1 end
+                            else
+                                cropBesarTotal = cropBesarTotal + 1
+                                if isReady then cropBesarReady = cropBesarReady + 1 end
+                            end
+                        else
+                            cropBiasaTotal = cropBiasaTotal + 1
+                            if isReady then cropBiasaReady = cropBiasaReady + 1 end
+                        end
+                    end 
+                end 
+            end
+            
+            local eggReady = 0; local maxEggs = 12
+            if not coopPlotGlobal then maxEggs = 0 else
+                for i = 1, 12 do
+                    local eggVisual = coopPlotGlobal:FindFirstChild("EggVisual_" .. tostring(i))
+                    local eggPrompt = eggVisual and eggVisual:FindFirstChildWhichIsA("ProximityPrompt", true)
+                    if eggPrompt and eggPrompt.Enabled then eggReady = eggReady + 1 end
+                end
+            end
+
+            local milkReady = 0; local maxMilk = limitSapi
+            local barnPlot = getPlot("Barn_Plot_")
+            if not barnPlot then maxMilk = 0 else
+                for i = 1, limitSapi do
+                    local milkVisual = barnPlot:FindFirstChild("MilkVisual_" .. tostring(i))
+                    local milkPrompt = milkVisual and milkVisual:FindFirstChildWhichIsA("ProximityPrompt", true)
+                    if milkPrompt and milkPrompt.Enabled then milkReady = milkReady + 1 end
+                end
+            end
+
+            -- SYNC PLANTED COUNT
+            plantedCount = currentTotal 
+            saPlantedCount = currentTotal
+
+            local ls = player:FindFirstChild("leaderstats")
+            if ls and ls:FindFirstChild("Coins") then
+                local val = ls.Coins.Value
+                if type(val) == "number" then
+                    if val >= 1000000 then currentUangText = string.format("Rp%.2fJT", val/1000000)
+                    elseif val >= 1000 then currentUangText = string.format("Rp%.2fRB", val/1000)
+                    else currentUangText = "Rp" .. tostring(val) end
+                else currentUangText = tostring(val) end
+            else currentUangText = "[Tidak Terdeteksi]" end
+            
+            local totalPanenStat = ls and ls:FindFirstChild("Panen") and ls.Panen.Value or 0
+            
+            -- Variabel Status Global
+            local isAnySAActive = isAutoClaimLahan or isAutoClaimAyam or isAutoClaimSapi or isStandAloneAutoPlant or isAutoPlantBesar or isStandAloneAutoHarvest or isAutoTPHarvestBiasaOn or isAutoTPHarvestBesarOn or isAutoCollectEggOn or isAutoCollectMilkOn or isAutoSellEggOn or isAutoSellMilkOn or isAutoSellDurianOn or isAutoSellSawitOn or isAutoSleepOn
+            local modeName = kaitunModesText[currentKaitunMode]
+            local targetText = (customLimit == "Unlimited") and "♾️" or tostring(customLimit)
+            local targetTextSA = (saCustomLimit == "Unlimited") and "♾️" or tostring(saCustomLimit)
+
+            local statsTernak = string.format("<b>🥚 Telur:</b> <font color='#FFFFA0'>%d/%d</font> | <b>🥛 Susu:</b> <font color='#FFFFFF'>%d/%d</font>", eggReady, maxEggs, milkReady, maxMilk)
+            local statsPanen = string.format("<b>🌾 Biasa:</b> <font color='#32FF32'>%d/%d</font> | <b>🌴 Umum:</b> <font color='#32FF32'>%d/%d</font> | <b>🔒 Private:</b> <font color='#32FF32'>%d/%d</font>", cropBiasaReady, cropBiasaTotal, cropBesarReady, cropBesarTotal, cropPrivateReady, cropPrivateTotal)
+            local sleepInfo = "\n<b>Status Tidur:</b> <font color='#88FFFF'>" .. globalSleepStatus .. "</font>"
+            local cleanSleepInfo = "\nStatus Tidur: " .. globalSleepStatus
+
+            -- HAPUS STATUS GANDA SAAT TIDUR
+            local displayStatusKaitun = currentStatusText
+            local displayStatusSA = saStatusText
+            if globalSleepStatus ~= "🚶 Belum Tidur" then
+                displayStatusKaitun = "AFK Memulihkan Energi..."
+                displayStatusSA = "AFK Memulihkan Energi..."
+            end
+
+            local floatString = string.format("<b>Mode:</b> %s\n<b>💰 Uang:</b> <font color='#FFD700'>%s</font>\n<b>Progress Tanam:</b> <font color='#32FF32'>%s</font> / %s\n%s\n%s%s\n<b>Status:</b> <font color='#AAAAAA'>%s</font>", modeName, currentUangText, tostring(plantedCount), targetText, statsPanen, statsTernak, sleepInfo, displayStatusKaitun)
+            local cleanDashText = string.format("Mode: %s\n💰 Uang: %s\nProgress Tanam: %s / %s\n🌾 P. Biasa: %d/%d | 🌴 P. Besar: %d/%d | 🔒 Private: %d/%d\n🥚 Telur: %d/%d | 🥛 Susu: %d/%d%s\nStatus: %s", modeName, currentUangText, tostring(plantedCount), targetText, cropBiasaReady, cropBiasaTotal, cropBesarReady, cropBesarTotal, cropPrivateReady, cropPrivateTotal, eggReady, maxEggs, milkReady, maxMilk, cleanSleepInfo, displayStatusKaitun)
+            
+            local floatStringSA = string.format("<b>💰 Uang:</b> <font color='#FFD700'>%s</font>\n<b>Progress Tanam:</b> <font color='#32FF32'>%s</font> / %s\n%s\n%s%s\n<b>Status:</b> <font color='#AAAAAA'>%s</font>", currentUangText, tostring(saPlantedCount), targetTextSA, statsPanen, statsTernak, sleepInfo, displayStatusSA)
+            local cleanDashTextSA = string.format("💰 Uang: %s\nProgress Tanam: %s / %s\n🌾 P. Biasa: %d/%d | 🌴 P. Besar: %d/%d | 🔒 Private: %d/%d\n🥚 Telur: %d/%d | 🥛 Susu: %d/%d%s\nStatus: %s", currentUangText, tostring(saPlantedCount), targetTextSA, cropBiasaReady, cropBiasaTotal, cropBesarReady, cropBesarTotal, cropPrivateReady, cropPrivateTotal, eggReady, maxEggs, milkReady, maxMilk, cleanSleepInfo, displayStatusSA)
+
+            -- Cek Mode untuk Dashboard Global
+            if isKaitunActive then
+                TxtDashboardGlobal.Text = "<font color='#32FF32'><b>[KAITUN AKTIF]</b></font>\n" .. floatString
+                ParaDashMon.Content.Text = "🟢 [MODE: KAITUN]\n" .. cleanDashText
+                if ParaDashboard then ParaDashboard.Content.Text = cleanDashText end
+                local lbl = PanelDashboardGlobal:FindFirstChild("TextLabel"); if lbl then lbl.Text = "📊 KAITUN DASHBOARD" end
+            elseif isAnySAActive then
+                TxtDashboardGlobal.Text = "<font color='#FFD700'><b>[STAND ALONE AKTIF]</b></font>\n" .. floatStringSA
+                ParaDashMon.Content.Text = "⚡ [MODE: STAND ALONE]\n" .. cleanDashTextSA
+                if ParaDashboard then ParaDashboard.Content.Text = "Kaitun mati. Stand Alone sedang berjalan." end
+                local lbl = PanelDashboardGlobal:FindFirstChild("TextLabel"); if lbl then lbl.Text = "⚡ STAND ALONE DASHBOARD" end
+            else
+                TxtDashboardGlobal.Text = string.format("<b>Status:</b> <font color='#AAAAAA'>Standby / Idle</font>\n<b>💰 Uang:</b> <font color='#FFD700'>%s</font>\n%s\n%s%s", currentUangText, statsPanen, statsTernak, sleepInfo)
+                ParaDashMon.Content.Text = "💤 [MODE: IDLE]\n💰 Uang: " .. currentUangText .. "\nMenunggu perintah Kaitun atau Stand Alone..."
+                if ParaDashboard then ParaDashboard.Content.Text = "Kaitun mati. Standby..." end
+                local lbl = PanelDashboardGlobal:FindFirstChild("TextLabel"); if lbl then lbl.Text = "📊 GLOBAL DASHBOARD" end
+            end
+
+            local dictBibit, dictTelur, dictSusu, dictPanenTas = {}, {}, {}, {}
+            local char = player.Character; local backpack = player:FindFirstChild("Backpack")
+            local function checkTas(parentObj)
+                if not parentObj then return end
+                for _, item in ipairs(parentObj:GetChildren()) do
+                    if item:IsA("Tool") then
+                        local nmLower = string.lower(item.Name)
+                        local baseName = string.gsub(item.Name, "%s*[xX]%d+$", "")
+                        local qtyStr = string.match(item.Name, "[xX](%d+)$")
+                        local qty = tonumber(qtyStr) or 1
+                        
+                        baseName = string.match(baseName, "^%s*(.-)%s*$") or baseName
+                        
+                        if string.find(nmLower, "bibit") or string.find(nmLower, "seed") then dictBibit[baseName] = (dictBibit[baseName] or 0) + qty 
+                        elseif string.find(nmLower, "egg") or string.find(nmLower, "telur") then dictTelur[baseName] = (dictTelur[baseName] or 0) + qty 
+                        elseif string.find(nmLower, "milk") or string.find(nmLower, "susu") then dictSusu[baseName] = (dictSusu[baseName] or 0) + qty 
+                        elseif not string.find(nmLower, "kunci") and not string.find(nmLower, "sepeda") and not string.find(nmLower, "payung") and not string.find(nmLower, "layang") then 
+                            dictPanenTas[baseName] = (dictPanenTas[baseName] or 0) + qty 
+                        end
+                    end
+                end
+            end
+            checkTas(char); checkTas(backpack)
+
+            local function createSortedList(dict)
+                local sortedKeys, totalItem = {}, 0
+                for k, _ in pairs(dict) do table.insert(sortedKeys, k) end
+                table.sort(sortedKeys) 
+                local str = ""
+                for _, k in ipairs(sortedKeys) do local v = dict[k]; totalItem = totalItem + v; str = str .. "- " .. k .. " : " .. v .. "\n" end
+                if #sortedKeys == 0 then str = "- Kosong\n" end
+                return str, totalItem
+            end
+            
+            local strBibit, totalBibit = createSortedList(dictBibit); local strTelur, totalTelur = createSortedList(dictTelur)
+            local strSusu, totalSusu = createSortedList(dictSusu); local _, totalPanenTas = createSortedList(dictPanenTas)
+
+            -- Update Teks untuk Panel Inventory Melayang & UI
+            local invTextFloat = string.format("<font color='#32FF32'><b>🌱 BIBIT:</b></font>\n%s\n<font color='#FFAAA5'><b>🌾 TOTAL PANEN DI TAS: %d</b></font>\n<font color='#888888'>Total Panen Server: %s</font>\n<font color='#FFD700'><b>🥚 TELUR:</b></font>\n%s\n<font color='#FFFFFF'><b>🥛 SUSU:</b></font>\n%s", strBibit, totalPanenTas, tostring(totalPanenStat), strTelur, strSusu)
+            local invTextUI = string.format("🌱 BIBIT:\n%s\n🌾 TOTAL PANEN DI TAS: %d\nTotal Panen Server: %s\n\n🥚 TELUR:\n%s\n🥛 SUSU:\n%s", strBibit, totalPanenTas, tostring(totalPanenStat), strTelur, strSusu)
+            TxtInventory.Text = invTextFloat
+            ParaInvUI.Content.Text = stripRichText(invTextUI)
+
+            local ayamTxt, sapiTxt, biasaStr, besarStr, privateStr = "", "", "", "", ""
+            if coopPlotGlobal then
+                for i = 1, 12 do
+                    local slotMarkers = coopPlotGlobal:FindFirstChild("SlotMarkers"); local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local isReady = false; local eggVisual = coopPlotGlobal:FindFirstChild("EggVisual_" .. tostring(i)); local eggPrompt = eggVisual and eggVisual:FindFirstChildWhichIsA("ProximityPrompt", true); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true)
+                    if (eggPrompt and eggPrompt.Enabled) or (feedPrompt and feedPrompt.Enabled) then isReady = true end
+                    local timeText = ""; if not isReady then local ayamModel = nil; for _, child in ipairs(coopPlotGlobal:GetChildren()) do if (string.find(string.lower(child.Name), "chicken") or string.find(string.lower(child.Name), "ayam")) and string.find(child.Name, tostring(i)) then ayamModel = child break end end; if ayamModel then timeText = getTimerText(ayamModel) end end
+                    local status = isReady and "✅ Siap" or "⏳ " .. string.gsub(timeText, "\n", "")
+                    if status == "⏳ " then status = "⏳ --" end; ayamTxt = ayamTxt .. i .. ": " .. status .. "\n"
+                end
+            else ayamTxt = "❌ Belum Claim\n" end
+            
+            if barnPlot then
+                for i = 1, limitSapi do
+                    local cow = barnPlot:FindFirstChild("Cow_" .. tostring(i)); local slotMarkers = barnPlot:FindFirstChild("SlotMarkers"); local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local isReady = false; local milkVisual = barnPlot:FindFirstChild("MilkVisual_" .. tostring(i)); local milkPrompt = milkVisual and milkVisual:FindFirstChildWhichIsA("ProximityPrompt", true); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true)
+                    if (milkPrompt and milkPrompt.Enabled) or (feedPrompt and feedPrompt.Enabled) then isReady = true end
+                    local timeText = ""; if not isReady and cow then timeText = getTimerText(cow) end
+                    local status = isReady and "✅ Siap" or "⏳ " .. string.gsub(timeText, "\n", "")
+                    if status == "⏳ " then status = "⏳ --" end; sapiTxt = sapiTxt .. i .. ": " .. status .. "\n"
+                end
+            else sapiTxt = "❌ Belum Claim\n" end
+
+            local cropsBiasa, cropsBesar, cropsPrivate = {}, {}, {}
+            if activeCrops then
+                for _, crop in ipairs(activeCrops:GetChildren()) do
+                    if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) then
+                        local seedType = crop:GetAttribute("SeedType") or "Tanaman"; local isReady = crop:GetAttribute("IsReady") or false; local plantedAt = crop:GetAttribute("PlantedAt") or 0; local growthTime = crop:GetAttribute("GrowthTime") or 0; local timeLeft = 0
+                        if plantedAt > 0 and growthTime > 0 then local currentTime = workspace:GetServerTimeNow(); local elapsed = currentTime - plantedAt; if elapsed < 0 then elapsed = os.time() - plantedAt end; timeLeft = math.max(0, growthTime - elapsed) end
+                        local isBesar = false; local lowerName = string.lower(seedType)
+                        if string.find(lowerName, "sawit") or string.find(lowerName, "durian") or string.find(lowerName, "pohon") then isBesar = true end
+                        local key = seedType .. "|" .. tostring(isReady)
+                        if isBesar then
+                            local cropPos = crop:IsA("Model") and crop:GetPivot().Position or crop.Position
+                            if posPrivate and (cropPos - posPrivate).Magnitude < 45 then
+                                if not cropsPrivate[key] then cropsPrivate[key] = {count=0, minTime=999999} end; cropsPrivate[key].count = cropsPrivate[key].count + 1; if timeLeft < cropsPrivate[key].minTime then cropsPrivate[key].minTime = timeLeft end
+                            else
+                                if not cropsBesar[key] then cropsBesar[key] = {count=0, minTime=999999} end; cropsBesar[key].count = cropsBesar[key].count + 1; if timeLeft < cropsBesar[key].minTime then cropsBesar[key].minTime = timeLeft end
+                            end
+                        else if not cropsBiasa[key] then cropsBiasa[key] = {count=0, minTime=999999} end; cropsBiasa[key].count = cropsBiasa[key].count + 1; if timeLeft < cropsBiasa[key].minTime then cropsBiasa[key].minTime = timeLeft end end
+                    end
+                end
+            end
+            if cropBiasaTotal == 0 then biasaStr = "Kosong\n" else for k, v in pairs(cropsBiasa) do local seed, ready = string.match(k, "([^|]+)|([^|]+)"); local stat = ""; if ready == "true" then stat = "✅ Siap" else stat = "⏳ " .. formatWaktu(v.minTime) end; biasaStr = biasaStr .. v.count .. "x " .. seed .. ": " .. stat .. "\n" end end
+            if cropBesarTotal == 0 then besarStr = "Kosong\n" else for k, v in pairs(cropsBesar) do local seed, ready = string.match(k, "([^|]+)|([^|]+)"); local stat = ""; if ready == "true" then stat = "✅ Siap" else stat = "⏳ " .. formatWaktu(v.minTime) end; besarStr = besarStr .. v.count .. "x " .. seed .. ": " .. stat .. "\n" end end
+            if cropPrivateTotal == 0 then privateStr = "Kosong\n" else for k, v in pairs(cropsPrivate) do local seed, ready = string.match(k, "([^|]+)|([^|]+)"); local stat = ""; if ready == "true" then stat = "✅ Siap" else stat = "⏳ " .. formatWaktu(v.minTime) end; privateStr = privateStr .. v.count .. "x " .. seed .. ": " .. stat .. "\n" end end
+
+            -- Update Teks untuk Panel Tanaman & Hewan Melayang
+            TxtTanaman.Text = "<font color='#A0FFA0'><b>🌾 Lahan Biasa:</b></font>\n" .. biasaStr .. "\n<font color='#FFA0A0'><b>🌴 Lahan Besar (Umum):</b></font>\n" .. besarStr .. "\n<font color='#B0B0FF'><b>🔒 Lahan Private (Kandang):</b></font>\n" .. privateStr
+            TxtHewan.Text = "<font color='#FFFFA0'><b>🐔 Ayam:</b></font>\n" .. ayamTxt .. "\n<font color='#FFFFFF'><b>🐄 Sapi:</b></font>\n" .. sapiTxt
+            
+            local cleanTanaman = "🌾 Lahan Biasa:\n" .. biasaStr .. "\n🌴 Lahan Besar (Umum):\n" .. besarStr .. "\n🔒 Lahan Private:\n" .. privateStr
+            local cleanHewan = "🐔 Ayam:\n" .. ayamTxt .. "\n🐄 Sapi:\n" .. sapiTxt
+            
+            ParaTanUI.Content.Text = stripRichText(cleanTanaman)
+            ParaHewUI.Content.Text = stripRichText(cleanHewan)
+        end)
+    end
+end)
+
+-- ================= WEBHOOK SYNC LOOP =================
+task.spawn(function()
+    local lastSentTime = 0
+    while task.wait(1) do
+        if isWebhookOn and webhookURL ~= "" and httprequest then
+            local currentTime = os.time()
+            if currentTime - lastSentTime >= (webhookInterval * 60) then
+                lastSentTime = currentTime
+                pcall(function()
+                    local dashText = stripRichText(TxtDashboardGlobal.Text)
+                    local tanText = stripRichText(TxtTanaman.Text)
+                    local hewText = stripRichText(TxtHewan.Text)
+                    local invText = stripRichText(TxtInventory.Text)
+
+                    local hariIndo = {Sunday="Minggu", Monday="Senin", Tuesday="Selasa", Wednesday="Rabu", Thursday="Kamis", Friday="Jumat", Saturday="Sabtu"}
+                    local namaHari = hariIndo[os.date("%A")] or os.date("%A")
+                    local tanggal = os.date("%d-%m-%Y")
+                    local jam = os.date("%H:%M:%S")
+                    local footerText = player.DisplayName .. " • MIGII-HUB " .. namaHari .. " - " .. tanggal .. " Terupdate " .. jam
+                    local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=150&height=150&format=png"
+
+                    local data = {
+                        ["username"] = "MIGII-HUB REPORT", ["avatar_url"] = WEBHOOK_IMAGE_URL,
+                        ["embeds"] = {{ 
+                            ["title"] = "📊 REPORT AUTO FARMING MIGII-HUB", 
+                            ["color"] = 2647260, 
+                            ["fields"] = { 
+                                { ["name"] = "👤 Player Info", ["value"] = "**User:** " .. player.Name .. "\n**Map:** " .. gameDisplayName, ["inline"] = false }, 
+                                { ["name"] = "📈 LIVE DASHBOARD", ["value"] = "```\n" .. dashText .. "\n```", ["inline"] = false },
+                                { ["name"] = "🌾 INFO TANAMAN", ["value"] = "```\n" .. tanText .. "\n```", ["inline"] = true },
+                                { ["name"] = "🐮 INFO HEWAN", ["value"] = "```\n" .. hewText .. "\n```", ["inline"] = true },
+                                { ["name"] = "🎒 INVENTORY", ["value"] = "```\n" .. invText .. "\n```", ["inline"] = false }
+                            }, 
+                            ["footer"] = { ["text"] = footerText, ["icon_url"] = avatarUrl }
+                        }}
+                    }
+                    
+                    if currentWebhookMessageId then
+                        local response = httprequest({Url = webhookURL .. "/messages/" .. currentWebhookMessageId, Method = "PATCH", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data)})
+                        if response.StatusCode == 404 then currentWebhookMessageId = nil end
+                    end
+                    if not currentWebhookMessageId then
+                        local response = httprequest({Url = webhookURL .. "?wait=true", Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data)})
+                        if response.StatusCode == 200 or response.StatusCode == 204 then local respData = HttpService:JSONDecode(response.Body); if respData and respData.id then currentWebhookMessageId = respData.id end end
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- Auto Return / Auto Load System
+local function onCharacterAdded(char)
+    local humanoid = char:WaitForChild("Humanoid", 5); local hrp = char:WaitForChild("HumanoidRootPart", 5)
+    if not humanoid or not hrp then return end
+    task.spawn(function()
+        task.wait(0.5) 
+        if isAutoReturnOn and lastDeathCFrame then char:PivotTo(lastDeathCFrame); if lastEquippedToolName then local backpack = player:WaitForChild("Backpack", 5); if backpack then local toolToEquip = backpack:WaitForChild(lastEquippedToolName, 3); if toolToEquip then humanoid:EquipTool(toolToEquip) end end end
+        elseif isAutoLoadOn and selectedFilePath and isfile and isfile(selectedFilePath) then local success, posData = pcall(function() return HttpService:JSONDecode(readfile(selectedFilePath)) end); if success and posData and posData.x then char:PivotTo(CFrame.new(posData.x, posData.y, posData.z)) end end
+    end)
+    humanoid.Died:Connect(function() if isAutoReturnOn then lastDeathCFrame = hrp.CFrame; local tool = char:FindFirstChildOfClass("Tool"); lastEquippedToolName = tool and tool.Name or nil end end)
+end
+player.CharacterAdded:Connect(onCharacterAdded); if player.Character then onCharacterAdded(player.Character) end
+
+task.spawn(function()
+    while task.wait(5) do 
+        if isAutoLoadOn and selectedFilePath and isfile and writefile then
+            local char = player.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp and hrp.Position.Y > -50 then pcall(function() writefile(selectedFilePath, HttpService:JSONEncode({x = hrp.Position.X, y = hrp.Position.Y, z = hrp.Position.Z})) end) end
+        end
+    end
+end)

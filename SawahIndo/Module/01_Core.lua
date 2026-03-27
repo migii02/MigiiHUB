@@ -1,0 +1,700 @@
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local MarketplaceService = game:GetService("MarketplaceService")
+local StarterGui = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+local LOGO_ID = "rbxthumb://type=Asset&id=132319281050903&w=150&h=150" 
+
+-- ======================================================== --
+--  SISTEM LOADER SCREEN MIGII-HUB
+-- ======================================================== --
+local LoaderGui = Instance.new("ScreenGui")
+LoaderGui.Name = "MigiiLoaderUI"
+LoaderGui.IgnoreGuiInset = true
+LoaderGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local successLoader, _ = pcall(function() LoaderGui.Parent = CoreGui end)
+if not successLoader then LoaderGui.Parent = player:WaitForChild("PlayerGui") end
+
+local BlurEffect = Instance.new("BlurEffect")
+BlurEffect.Size = 0
+BlurEffect.Parent = game:GetService("Lighting")
+
+local MainBg = Instance.new("Frame")
+MainBg.Size = UDim2.new(1, 0, 1, 0)
+MainBg.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainBg.BackgroundTransparency = 0.2
+MainBg.BorderSizePixel = 0
+MainBg.Parent = LoaderGui
+
+local CenterBox = Instance.new("Frame")
+CenterBox.Size = UDim2.new(0, 320, 0, 200)
+CenterBox.Position = UDim2.new(0.5, -160, 0.5, -100)
+CenterBox.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+CenterBox.BorderSizePixel = 0
+CenterBox.Parent = MainBg
+Instance.new("UICorner", CenterBox).CornerRadius = UDim.new(0, 12)
+local BoxStroke = Instance.new("UIStroke")
+BoxStroke.Color = Color3.fromRGB(50, 255, 50)
+BoxStroke.Thickness = 2
+BoxStroke.Transparency = 0.5
+BoxStroke.Parent = CenterBox
+
+local LogoImg = Instance.new("ImageLabel")
+LogoImg.Size = UDim2.new(0, 70, 0, 70)
+LogoImg.Position = UDim2.new(0.5, -35, 0, 15)
+LogoImg.BackgroundTransparency = 1
+LogoImg.Image = LOGO_ID
+LogoImg.Parent = CenterBox
+
+local LogoTitle = Instance.new("TextLabel")
+LogoTitle.Size = UDim2.new(1, 0, 0, 30)
+LogoTitle.Position = UDim2.new(0, 0, 0, 90)
+LogoTitle.BackgroundTransparency = 1
+LogoTitle.Text = "MIGII-HUB"
+LogoTitle.TextColor3 = Color3.fromRGB(50, 255, 50)
+LogoTitle.Font = Enum.Font.GothamBlack
+LogoTitle.TextSize = 28
+LogoTitle.Parent = CenterBox
+
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(1, 0, 0, 30)
+StatusText.Position = UDim2.new(0, 0, 0, 120)
+StatusText.BackgroundTransparency = 1
+StatusText.Text = "Initializing Script..."
+StatusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+StatusText.Font = Enum.Font.GothamSemibold
+StatusText.TextSize = 13
+StatusText.Parent = CenterBox
+
+local BarBg = Instance.new("Frame")
+BarBg.Size = UDim2.new(0, 260, 0, 8)
+BarBg.Position = UDim2.new(0.5, -130, 0, 165)
+BarBg.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+BarBg.BorderSizePixel = 0
+BarBg.Parent = CenterBox
+Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame")
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+BarFill.BorderSizePixel = 0
+BarFill.Parent = BarBg
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+-- Animasi Loader
+TweenService:Create(BlurEffect, TweenInfo.new(0.5), {Size = 15}):Play()
+
+local function updateLoad(text, progress, dur)
+    StatusText.Text = text
+    local tween = TweenService:Create(BarFill, TweenInfo.new(dur, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(progress, 0, 1, 0)})
+    tween:Play()
+    task.wait(dur)
+end
+
+updateLoad("Loading Configurations...", 0.3, 0.8)
+updateLoad("Fetching Map Data...", 0.6, 0.7)
+updateLoad("Bypassing Anti-Cheat...", 0.85, 0.6)
+updateLoad("Starting Interface...", 1, 0.5)
+task.wait(0.3)
+
+-- Animasi Fade Out
+local fadeOutInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+TweenService:Create(MainBg, fadeOutInfo, {BackgroundTransparency = 1}):Play()
+TweenService:Create(CenterBox, fadeOutInfo, {BackgroundTransparency = 1}):Play()
+TweenService:Create(LogoImg, fadeOutInfo, {ImageTransparency = 1}):Play()
+TweenService:Create(LogoTitle, fadeOutInfo, {TextTransparency = 1}):Play()
+TweenService:Create(StatusText, fadeOutInfo, {TextTransparency = 1}):Play()
+TweenService:Create(BarBg, fadeOutInfo, {BackgroundTransparency = 1}):Play()
+TweenService:Create(BarFill, fadeOutInfo, {BackgroundTransparency = 1}):Play()
+TweenService:Create(BoxStroke, fadeOutInfo, {Transparency = 1}):Play()
+TweenService:Create(BlurEffect, fadeOutInfo, {Size = 0}):Play()
+
+task.wait(0.6)
+LoaderGui:Destroy()
+BlurEffect:Destroy()
+
+-- ======================================================== --
+--  SISTEM NOTIFIKASI & SETUP AWAL
+-- ======================================================== --
+local Window = nil -- Akan diisi oleh UI Library nanti
+local function sendNotification(pesan)
+    if Window then
+        pcall(function()
+            Window:Notify(tostring(pesan))
+        end)
+    else
+        task.spawn(function()
+            pcall(function() 
+                StarterGui:SetCore("SendNotification", { Title = "MIGII-HUB", Text = tostring(pesan), Duration = 3 }) 
+            end)
+        end)
+    end
+end
+
+-- === DETEKSI NAMA GAME ===
+local baseFolder = "MigiiHub"
+local gameDisplayName = "Unknown Map" 
+local function getGameNames()
+    local success, info = pcall(function() return MarketplaceService:GetProductInfo(game.PlaceId) end)
+    local rawName = (success and info and info.Name) or game.Name
+    gameDisplayName = string.gsub(rawName, "[<>]", "") 
+    local safeName = string.gsub(rawName, '[^%w%p%s]', '') 
+    safeName = string.gsub(safeName, '[<>:"/\\|?*]', '')
+    safeName = string.gsub(safeName, '^%s*(.-)%s*$', '%1') 
+    if safeName == "" then safeName = tostring(game.PlaceId) end
+    return string.sub(safeName, 1, 30) 
+end
+
+local gameFolderName = getGameNames()
+local fullFolderPath = baseFolder .. "/" .. gameFolderName
+local autoLoadFile = fullFolderPath .. "/_AutoLoad.txt" 
+local webhookConfigFile = baseFolder .. "/_WebhookConfig.json" 
+local kaitunPosConfigFile = fullFolderPath .. "/_KaitunPos.json"
+
+if isfolder and makefolder then 
+    if not isfolder(baseFolder) then makefolder(baseFolder) end
+    if not isfolder(fullFolderPath) then makefolder(fullFolderPath) end 
+end
+
+-- === VARIABEL STATUS & DATA ===
+local selectedFilePath = nil
+local isAutoLoadOn = false
+local isAutoReturnOn = false
+local isPriorityTaskActive = false
+local webhookURL = ""
+local isWebhookOn = false
+local webhookInterval = 1
+local currentWebhookMessageId = nil 
+local WEBHOOK_IMAGE_URL = "https://cdn.discordapp.com/attachments/1429394437544476734/1484149183857426553/IMG_20260318_165038_370.jpg" 
+
+if isfile and isfile(webhookConfigFile) then
+    pcall(function()
+        local data = HttpService:JSONDecode(readfile(webhookConfigFile))
+        if data.url then webhookURL = data.url end
+        if data.isOn ~= nil then isWebhookOn = data.isOn end
+        if data.interval ~= nil then webhookInterval = data.interval end
+    end)
+end
+
+local function saveWebhookConfig()
+    if writefile then pcall(function() writefile(webhookConfigFile, HttpService:JSONEncode({url = webhookURL, isOn = isWebhookOn, interval = webhookInterval})) end) end
+end
+
+-- Variabel Kaitun
+local currentKaitunMode = 1
+local kaitunModesText = {"🌟 Mode 1: All In (Lahan Besar, Ayam, Sapi)", "🌴 Mode 2: Lahan Besar & Biasa Only", "🐔 Mode 3: Lahan Besar, Ayam, Biasa", "🌾 Mode 4: Lahan Biasa Only (Multi-seed)"}
+local plantModes = {"Kotak", "Lurus Ke Depan", "Lurus Ke Kiri Lalu Ke Kanan", "Lingkaran", "Tumpuk"}
+local currentPlantModeIndex = 1
+local customLimit = 15
+local plantedCount = 0
+local savedPlantLocationCFrame = nil
+local lastDeathCFrame = nil
+local lastEquippedToolName = nil
+local myLockedLahan = nil 
+
+-- Load Config Posisi Kaitun agar Permanen
+if isfile and isfile(kaitunPosConfigFile) then
+    pcall(function()
+        local data = HttpService:JSONDecode(readfile(kaitunPosConfigFile))
+        if data.x and data.y and data.z then
+            local pos = Vector3.new(data.x, data.y, data.z)
+            local lookAt = Vector3.new(data.lx or data.x, data.ly or data.y, data.lz or (data.z - 1))
+            savedPlantLocationCFrame = CFrame.lookAt(pos, lookAt)
+        end
+    end)
+end
+
+if isfile and isfile(autoLoadFile) then 
+    isAutoLoadOn = true
+    selectedFilePath = readfile(autoLoadFile) 
+end
+
+local currentStatusText = "Menunggu perintah..."
+local currentUangText = "Menghitung..."
+local selectedBibit1Name = nil
+local selectedBibit2Name = nil
+local isKaitunActive = false
+local kaitunPlantModeData = {x=0, z=0, dx=0, dz=-1, lineStep=1, circleStep=1, circleRadius=0.2, maxCircleSteps=6}
+local currentKaitunTurn = 1
+local isKaitunSellEgg = false
+local isKaitunSellMilk = false
+local isKaitunSellDurian = false
+local isKaitunSellSawit = false
+local isKaitunPrivate = false 
+
+-- Variabel Stand Alone
+local saCustomLimit = 15 
+local saPlantedCount = 0
+local saSelectedBibit1 = nil
+local saSelectedBibit2 = nil
+local saCurrentTurn = 1
+local saStatusText = "Standby"
+local globalSleepStatus = "🚶 Belum Tidur"
+
+-- Variabel State Stand Alone & ETC
+local isAutoClaimLahan = false
+local isAutoClaimAyam = false
+local isAutoClaimSapi = false
+local isStandAloneAutoPlant = false
+local isAutoPlantBesar = false
+local isStandAloneAutoHarvest = false
+local isAutoTPHarvestBiasaOn = false
+local isAutoTPHarvestBesarOn = false
+local isAutoCollectEggOn = false
+local isAutoCollectMilkOn = false
+local isAutoSellEggOn = false
+local isAutoSellMilkOn = false
+local isAutoSellDurianOn = false
+local isAutoSellSawitOn = false
+local isAutoSleepOn = false 
+local isFullbrightOn = false
+
+-- ======================================================== --
+--  SISTEM PENGAMAN TABRAKAN SCRIPT (SMART LOCK)
+-- ======================================================== --
+local function checkKaitunLock()
+    if isKaitunActive then
+        sendNotification("⚠️ MATIKAN FITUR KAITUN TERLEBIH DAHULU!")
+        return true
+    end
+    return false
+end
+
+local function checkSALock()
+    local isAnySA = isAutoClaimLahan or isAutoClaimAyam or isAutoClaimSapi or isStandAloneAutoPlant or isAutoPlantBesar or isStandAloneAutoHarvest or isAutoTPHarvestBiasaOn or isAutoTPHarvestBesarOn or isAutoCollectEggOn or isAutoCollectMilkOn or isAutoSellEggOn or isAutoSellMilkOn or isAutoSellDurianOn or isAutoSellSawitOn or isAutoSleepOn
+    if isAnySA then
+        sendNotification("⚠️ MATIKAN SEMUA FITUR STAND ALONE & ETC DULU!")
+        return true
+    end
+    return false
+end
+
+local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+-- ======================================================== --
+--  SISTEM FUNGSI BANTUAN
+-- ======================================================== --
+local function stripRichText(str) 
+    if not str then return "" end
+    str = string.gsub(str, "<br>", "\n")
+    return string.gsub(str, "<[^>]+>", "") 
+end
+
+local function formatWaktu(seconds) 
+    if seconds <= 0 then return "0s" end
+    local m = math.floor(seconds / 60)
+    local s = math.floor(seconds % 60)
+    if m > 0 then return string.format("%dm %ds", m, s) end
+    return string.format("%ds", s) 
+end
+
+local function autoConfirmUI() 
+    task.spawn(function() 
+        task.wait(0.3)
+        pcall(function() 
+            for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do 
+                if gui:IsA("TextButton") and gui.Visible then 
+                    local txt = string.lower(gui.Text)
+                    if txt == "yes" or txt == "ya" or txt == "ok" or txt == "oke" or txt == "confirm" or txt == "claim" or string.find(txt, "sell") or string.find(txt, "jual") or txt == "max" then 
+                        if firesignal then firesignal(gui.MouseButton1Click) 
+                        elseif getconnections then for _, conn in pairs(getconnections(gui.MouseButton1Click)) do conn:Fire() end end 
+                    end 
+                end 
+            end 
+        end) 
+    end) 
+end
+
+local function autoClickBuahUI(namaTab)
+    local pGui = player:FindFirstChild("PlayerGui")
+    if not pGui then return end
+
+    for _, gui in ipairs(pGui:GetDescendants()) do
+        if (gui:IsA("TextButton") or gui:IsA("TextLabel")) and gui.Visible then
+            if string.lower(gui.Text) == string.lower(namaTab) then
+                local btn = gui:IsA("TextButton") and gui or gui:FindFirstAncestorWhichIsA("TextButton") or gui:FindFirstAncestorWhichIsA("ImageButton")
+                if btn then
+                    if firesignal then firesignal(btn.MouseButton1Click)
+                    elseif getconnections then for _, conn in pairs(getconnections(btn.MouseButton1Click)) do conn:Fire() end end
+                end
+            end
+        end
+    end
+
+    task.wait(0.5) 
+
+    for _, gui in ipairs(pGui:GetDescendants()) do
+        if (gui:IsA("TextButton") or gui:IsA("TextLabel")) and gui.Visible then
+            if string.find(string.lower(gui.Text), "jual semua") then
+                local btn = gui:IsA("TextButton") and gui or gui:FindFirstAncestorWhichIsA("TextButton") or gui:FindFirstAncestorWhichIsA("ImageButton")
+                if btn then
+                    if firesignal then firesignal(btn.MouseButton1Click)
+                    elseif getconnections then for _, conn in pairs(getconnections(btn.MouseButton1Click)) do conn:Fire() end end
+                end
+            end
+        end
+    end
+end
+
+local function autoInteract(promptPath) 
+    if promptPath and promptPath:IsA("ProximityPrompt") then 
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            local oldPos = hrp.CFrame
+            hrp.CFrame = promptPath.Parent.CFrame
+            task.wait(0.2)
+            if fireproximityprompt then 
+                fireproximityprompt(promptPath, 1, true)
+                sendNotification("✅ Berhasil interaksi dengan NPC!") 
+            end
+            task.wait(0.1)
+            hrp.CFrame = oldPos 
+        end 
+    end 
+end
+
+local function autoClaimPlot(folderName, plotType, searchDirectly) 
+    local targetFolder = workspace
+    if not searchDirectly then targetFolder = workspace:FindFirstChild(folderName) end
+    if not targetFolder then return false, nil end
+    for _, plot in ipairs(targetFolder:GetChildren()) do 
+        if searchDirectly and not string.find(plot.Name, folderName) then continue end
+        local prompt = plot:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if prompt and prompt.Enabled then 
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then 
+                pcall(function() hrp.CFrame = (plot:IsA("Model") and plot:GetPivot() or plot.CFrame) * CFrame.new(0, 3, 0) end)
+                task.wait(0.4)
+                if fireproximityprompt then pcall(function() fireproximityprompt(prompt, 1, true) end) end
+                autoConfirmUI()
+                task.wait(0.6)
+                return true, plot 
+            end 
+        end 
+    end
+    return false, nil 
+end
+
+local function cariDanPegang(namaBibit) 
+    local tool = nil
+    local c = player.Character
+    local backpack = player:FindFirstChild("Backpack")
+    local searchName = string.lower(namaBibit)
+    
+    if c then 
+        for _, item in ipairs(c:GetChildren()) do 
+            if item:IsA("Tool") and string.find(string.lower(item.Name), searchName) then tool = item; break end 
+        end 
+    end
+    if not tool and backpack then 
+        for _, item in ipairs(backpack:GetChildren()) do 
+            if item:IsA("Tool") and string.find(string.lower(item.Name), searchName) then tool = item; break end 
+        end 
+    end
+    if tool and c then 
+        local hum = c:FindFirstChild("Humanoid")
+        if hum then hum:EquipTool(tool); task.wait(0.3); return true end 
+    end
+    return false 
+end
+
+local function isCropBesar(crop) 
+    if not crop then return false end
+    local seedType = crop:GetAttribute("SeedType") or crop.Name
+    local lowerName = string.lower(seedType)
+    if string.find(lowerName, "sawit") or string.find(lowerName, "durian") or string.find(lowerName, "pohon") then return true end
+    return false 
+end
+
+local function getTimerText(model) 
+    local timeText = ""
+    pcall(function() 
+        for _, desc in ipairs(model:GetDescendants()) do 
+            if desc:IsA("TextLabel") and desc.Visible and not string.find(desc.Parent.Name, "ESP_Migii") then 
+                local txt = string.lower(desc.Text)
+                if string.find(txt, "%d+s") or string.find(txt, "makan") or string.find(txt, "tumbuh") then timeText = desc.Text; break end 
+            end 
+        end 
+    end)
+    return timeText 
+end
+
+local function getPlot(plotPrefix) 
+    for _, obj in ipairs(workspace:GetChildren()) do 
+        if (string.find(obj.Name, plotPrefix) and string.find(obj.Name, player.Name)) or (string.find(obj.Name, plotPrefix) and string.find(obj.Name, player.DisplayName)) then return obj end 
+    end
+    return nil 
+end
+
+local function getLahanBesar()
+    local coopPlot = getPlot("Coop_CoopPlot_")
+    if coopPlot then
+        local areaBesar = coopPlot:FindFirstChild("AreaTanamBesarPrivate") or coopPlot:FindFirstChild("AreaTanamBesar")
+        if areaBesar then return areaBesar end
+    end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if (obj.Name == "AreaTanamBesarPrivate" or obj.Name == "AreaTanamBesar") and obj.Parent then
+            if string.find(obj.Parent.Name, player.Name) or string.find(obj.Parent.Name, player.DisplayName) then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+local function getCFrameFromObj(obj)
+    if obj:IsA("Model") then return obj:GetPivot() end
+    if obj:IsA("BasePart") then return obj.CFrame end
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("BasePart") then return child.CFrame end
+    end
+    return CFrame.new(0,0,0)
+end
+
+local function getPlantPos(mode, basePos, lockCFrame, spacing, stepData) 
+    if mode == "Kotak" then 
+        local targetPos = basePos + Vector3.new(stepData.x * spacing, 0, stepData.z * spacing)
+        if stepData.x == stepData.z or (stepData.x < 0 and stepData.x == -stepData.z) or (stepData.x > 0 and stepData.x == 1 - stepData.z) then 
+            local temp = stepData.dx
+            stepData.dx = -stepData.dz
+            stepData.dz = temp 
+        end
+        stepData.x = stepData.x + stepData.dx
+        stepData.z = stepData.z + stepData.dz
+        return targetPos 
+    elseif mode == "Lurus Ke Depan" then 
+        local flatDir = Vector3.new(lockCFrame.LookVector.X, 0, lockCFrame.LookVector.Z).Unit
+        if flatDir.Magnitude == 0 then flatDir = Vector3.new(0,0,-1) end
+        local targetPos = basePos + (flatDir * (spacing * stepData.lineStep))
+        stepData.lineStep = stepData.lineStep + 1
+        if stepData.lineStep > 25 then stepData.lineStep = 1 end
+        return targetPos 
+    elseif mode == "Lurus Ke Kiri Lalu Ke Kanan" then 
+        local flatRight = Vector3.new(lockCFrame.RightVector.X, 0, lockCFrame.RightVector.Z).Unit
+        if flatRight.Magnitude == 0 then flatRight = Vector3.new(1,0,0) end
+        local jarakMultiplier = math.ceil(stepData.lineStep / 2)
+        local arah = (stepData.lineStep % 2 == 0) and flatRight or -flatRight
+        local targetPos = basePos + (arah * (spacing * jarakMultiplier))
+        stepData.lineStep = stepData.lineStep + 1
+        if stepData.lineStep > 30 then stepData.lineStep = 1 end
+        return targetPos 
+    elseif mode == "Lingkaran" then 
+        local angle = (stepData.circleStep / stepData.maxCircleSteps) * math.pi * 2
+        local targetPos = basePos + Vector3.new(math.cos(angle) * stepData.circleRadius, 0, math.sin(angle) * stepData.circleRadius)
+        stepData.circleStep = stepData.circleStep + 1
+        if stepData.circleStep > stepData.maxCircleSteps then 
+            stepData.circleStep = 1
+            stepData.circleRadius = stepData.circleRadius + spacing
+            stepData.maxCircleSteps = math.floor((stepData.circleRadius * math.pi * 2) / spacing)
+            if stepData.maxCircleSteps < 6 then stepData.maxCircleSteps = 6 end 
+        end
+        return targetPos 
+    elseif mode == "Tumpuk" then 
+        return basePos 
+    end
+    return basePos 
+end
+
+local function createOrUpdateESP(parentObj, espId, displayName, isReady, timeText, isCrop) 
+    if not parentObj then return end
+    local prefix = isCrop and "ESP_Migii_Crop_" or "ESP_Migii_Animal_"
+    local espName = prefix .. espId:gsub(" ", "")
+    local esp = parentObj:FindFirstChild(espName)
+    
+    if not esp then 
+        esp = Instance.new("BillboardGui")
+        esp.Name = espName
+        esp.Size = UDim2.new(0, 250, 0, 80)
+        esp.StudsOffset = Vector3.new(0, 4.5, 0)
+        esp.AlwaysOnTop = true
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textLabel.Font = Enum.Font.GothamBlack
+        textLabel.TextSize = 18
+        textLabel.TextStrokeTransparency = 0
+        textLabel.RichText = true
+        textLabel.Parent = esp
+        esp.Parent = parentObj 
+    end
+    
+    local lbl = esp:FindFirstChildOfClass("TextLabel")
+    local whiteName = "<font color='#FFFFFF'><b>" .. displayName .. "</b></font>"
+    if isReady then 
+        lbl.Text = whiteName .. "\n<font color='#32FF32'>✅ SIAP PANEN</font>" 
+    else 
+        if timeText and timeText ~= "" then 
+            lbl.Text = whiteName .. "\n<font color='#FF4444'>⏳ " .. string.gsub(timeText, "\n", " ") .. "</font>" 
+        else 
+            lbl.Text = whiteName .. "\n<font color='#FF4444'>⏳ PROSES...</font>" 
+        end 
+    end 
+end
+
+local function hapusSemuaESP(prefix) 
+    for _, obj in ipairs(workspace:GetDescendants()) do 
+        if obj:IsA("BillboardGui") and string.find(obj.Name, prefix) then obj:Destroy() end 
+    end 
+end
+
+local function getPlayerNames()
+    local names = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Name ~= player.Name then
+            table.insert(names, p.Name .. " (" .. p.DisplayName .. ")")
+        end
+    end
+    if #names == 0 then table.insert(names, "❌ Tidak ada player lain") end
+    return names
+end
+
+local function getAreaTanamBiasa()
+    local list = {}
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if string.find(obj.Name, "AreaTanam") and not string.find(obj.Name, "Besar") then
+            table.insert(list, obj.Name)
+        end
+    end
+    if #list == 0 then table.insert(list, "❌ Tidak ditemukan") end
+    table.sort(list)
+    return list
+end
+
+local function getAreaTanamBesar()
+    local list = {}
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if string.find(obj.Name, "AreaTanamBesar") then
+            table.insert(list, obj.Name)
+        end
+    end
+    if #list == 0 then table.insert(list, "❌ Tidak ditemukan") end
+    table.sort(list)
+    return list
+end
+
+-- ========================================= --
+--    FLOATING PANEL SYSTEM                  --
+-- ========================================= --
+local MonitorGui = Instance.new("ScreenGui")
+MonitorGui.Name = "MigiiFloatingMonitor"
+local successMon, _ = pcall(function() MonitorGui.Parent = CoreGui end)
+if not successMon then MonitorGui.Parent = player:WaitForChild("PlayerGui") end
+
+local function createFloatingPanel(name, titleText, pos, size)
+    local frame = Instance.new("Frame")
+    frame.Name = name
+    frame.Size = size
+    frame.Position = pos
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    frame.BackgroundTransparency = 0.3
+    frame.Active = true
+    frame.Draggable = false
+    frame.Visible = false 
+    frame.Parent = MonitorGui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(40, 100, 220)
+    stroke.Thickness = 1.5
+    stroke.Parent = frame
+    
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(1, 0, 0, 28)
+    header.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    header.BackgroundTransparency = 0.2
+    header.Active = true
+    header.Draggable = false 
+    header.Parent = frame
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0, 8)
+    
+    local headerCover = Instance.new("Frame")
+    headerCover.Size = UDim2.new(1, 0, 0, 10)
+    headerCover.Position = UDim2.new(0, 0, 1, -10)
+    headerCover.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    headerCover.BackgroundTransparency = 0.2
+    headerCover.BorderSizePixel = 0
+    headerCover.Parent = header
+    
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    header.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 1, 0)
+    title.BackgroundTransparency = 1
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 13
+    title.Text = titleText
+    title.Parent = header
+    
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -10, 1, -34)
+    scroll.Position = UDim2.new(0, 5, 0, 32)
+    scroll.BackgroundTransparency = 1
+    scroll.ScrollBarThickness = 3
+    scroll.Active = true 
+    scroll.CanvasSize = UDim2.new(0,0,0,0)
+    scroll.Parent = frame
+    
+    local content = Instance.new("TextLabel")
+    content.Size = UDim2.new(1, 0, 0, 0)
+    content.BackgroundTransparency = 1
+    content.TextColor3 = Color3.fromRGB(240, 240, 240)
+    content.Font = Enum.Font.GothamSemibold
+    content.TextSize = 12 
+    content.TextXAlignment = Enum.TextXAlignment.Left
+    content.TextYAlignment = Enum.TextYAlignment.Top
+    content.RichText = true
+    content.AutomaticSize = Enum.AutomaticSize.Y
+    content.Parent = scroll
+    
+    content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function() scroll.CanvasSize = UDim2.new(0, 0, 0, content.AbsoluteSize.Y + 5) end)
+    return frame, content
+end
+
+local PanelDashboardGlobal, TxtDashboardGlobal = createFloatingPanel("PanelDashboardGlobal", "📊 GLOBAL DASHBOARD", UDim2.new(1, -330, 0.05, 0), UDim2.new(0, 310, 0, 195))
+local PanelTanaman, TxtTanaman = createFloatingPanel("PanelTanaman", "🌾 INFO TANAMAN", UDim2.new(0.02, 0, 0.35, 0), UDim2.new(0, 310, 0, 170))
+local PanelHewan, TxtHewan = createFloatingPanel("PanelHewan", "🐮 INFO HEWAN", UDim2.new(0.02, 0, 0.58, 0), UDim2.new(0, 310, 0, 170))
+local PanelInventory, TxtInventory = createFloatingPanel("PanelInventory", "🎒 INVENTORY", UDim2.new(0.25, 0, 0.15, 0), UDim2.new(0, 310, 0, 170))

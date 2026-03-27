@@ -1,0 +1,512 @@
+-- ======================================================== --
+--   TAB CHANGELOG
+-- ======================================================== --
+Tabs.Changelog:AddParagraph({
+    Title = "📝 PATCH NOTES (Update: 27 Maret 2026 | 22:14 WIB)",
+    Content = "(+) Rework besar-besaran Pergantian UI menggunakan Library v2.4 Uegenewu\n"
+        .. "(+) Menambahkan sistem Tema UI (Theme Selector) di Tab Config (Tersimpan otomatis).\n"
+        .. "(+) Menambahkan sistem Level untuk kandang sapi\n"
+        .. "(+) Menambahkan item Event Collab Shope (Baju, Helm, Tas) pada ETC Fitur.\n"
+        .. "(+) Menambahkan sistem Profit Tracker (Cek Keuntungan) pada menu Jual Panen Instan.\n"
+        .. "(+) Menambahkan Fitur Troll Drop Payung & Layang-layang\n"
+        .. "(+) Menambahkan storage pada menu shop\n"
+        .. "(/) Improve Webhook, sekarang tampilan webhook jauh lebih rapih dan keren\n"
+        .. "(/) Tombol Logo UI disempurnakan\n"
+        .. "(/) Auto Sell Durian & Sawit\n"
+        .. "(/) Rework Menu Jual Panen: Kini membypass data server (langsung jual tanpa perlu item fisik di tas).\n"
+        .. "(/) UI Jual Panen diperbarui: Toggle Jual Semua diganti menjadi 2 tombol terpisah agar lebih praktis.\n"
+        .. "(/) Sinkronisasi Smart Lock: Tombol Mandi, Storage, Troll Drop, Aksesoris, dan Teleport kini otomatis terkunci saat Auto Farming berjalan untuk mencegah Glitch/Bug.\n"
+        .. "(/) Bypass Smart Lock: Fitur Beli & Jual Instan kini bisa digunakan bersamaan sambil Auto Farming (Kaitun/SA).\n"
+        .. "(-) Fitur Keybind PC & Hotkey PC (Dihapus)"
+})
+
+Tabs.Changelog:AddParagraph({
+    Title = "👨‍💻 DEVELOPER INFO",
+    Content = "Developer: migii corleone\nStatus: Undetected & Optimized\n\nThanks for euegenewu (Lunar Dev Script) For Library UI nya"
+})
+
+-- ==== KOMPONEN TAB MONITOR ====
+local ParaDashMon   = Tabs.Monitor:AddParagraph({ Title = "📈 GLOBAL LIVE DASHBOARD", Content = "Loading data..." })
+local ParaTanUI     = Tabs.Monitor:AddParagraph({ Title = "🌾 PANEL TANAMAN", Content = "Loading data..." })
+local ParaHewUI     = Tabs.Monitor:AddParagraph({ Title = "🐮 PANEL HEWAN TERNAK", Content = "Loading data..." })
+local ParaInvUI     = Tabs.Monitor:AddParagraph({ Title = "🎒 INVENTORY (TAS)", Content = "Loading data..." })
+
+local SecMonitorTog = Tabs.Monitor:AddSection({Title = "⚙️ PENGATURAN PANEL MELAYANG"})
+SecMonitorTog:AddNote({Text = "Nyalakan fitur di bawah ini untuk memunculkan panel secara melayang (Floating) di layar HP-mu."})
+
+local TogGlobalDash = SecMonitorTog:AddToggle({ 
+    Text = "Tampilkan Global Live Dashboard", 
+    Default = false,
+    Callback = function(v) PanelDashboardGlobal.Visible = v end
+})
+
+SecMonitorTog:AddToggle({ 
+    Text = "Tampilkan Info Tanaman", 
+    Default = false,
+    Callback = function(v) PanelTanaman.Visible = v end 
+})
+
+SecMonitorTog:AddToggle({ 
+    Text = "Tampilkan Info Hewan Ternak", 
+    Default = false,
+    Callback = function(v) PanelHewan.Visible = v end 
+})
+
+SecMonitorTog:AddToggle({ 
+    Text = "Tampilkan Inventory / Backpack", 
+    Default = false,
+    Callback = function(v) PanelInventory.Visible = v end 
+})
+
+-- ==== KOMPONEN TAB KAITUN ====
+-- local SecKaitunDash = Tabs.Kaitun:AddSection({Title = "📊 LIVE DASHBOARD"})
+local ParaDashboard = Tabs.Kaitun:AddParagraph({ Title = "📊 LIVE DASHBOARD", Content = "Loading data..." })
+
+local TutText = "📖 CARA PENGGUNAAN:\n"
+.. "1. Berdiri di area kosong Lahan Biasa, lalu klik '1. Set Lahan Biasa'. (Posisi ini akan disimpan secara permanen, dan karakter akan otomatis kembali kesini setelah mengurus kandang/lahan besar).\n"
+.. "2. Klik '2. Scan Bibit Di Tas'.\n"
+.. "3. Pilih Bibit 1 dan Bibit 2 (Gunakan Single Seed jika hanya 1 bibit).\n"
+.. "4. Atur Limit Tanam (Ketik angka, misal 15. Kosongkan untuk Unlimited).\n"
+.. "5. Pilih Mode Kaitun,\n"
+.. "6. Pilih Level Kandang sapi, (Sesuai Level Kandang kamu) Setelah itu langsung Auto Kaitun start."
+
+local TutText2 = "🌟 PENJELASAN MODE:\n"
+.. "• Mode 1 (All In): Mengurus Semuanya (Lahan Besar, Lahan Biasa, Ayam & Sapi).\n"
+.. "• Mode 2: Fokus Lahan Besar & Lahan Biasa saja.\n"
+.. "• Mode 3: Fokus Lahan Besar, Lahan Biasa & Ayam (Tanpa Sapi).\n"
+.. "• Mode 4: Fokus farming Lahan Biasa saja (Multi-seed)\n\n"
+.. "🌟 PENJELASAN LEVEL KANDANG:\n"
+.. "• Level 1 (3 Sapi)\n"
+.. "• Level 2 (6 Sapi)\n"
+.. "• Level 3 (9 Sapi)\n"
+.. "• Level 4 (12 Sapi)\n"
+.. "• Level 5 (15 Sapi)",
+
+Tabs.Kaitun:AddParagraph({ Title = "📖      PANDUAN & TUTORIAL", Content = TutText })
+Tabs.Kaitun:AddParagraph({ Title = "📖      PENJELASAN MODE", Content = TutText2 })
+
+Tabs.Kaitun:AddTextBox({
+    Text = "Batas Limit Tanam (Kaitun)",
+    Placeholder = "Contoh: 15 (Kosongkan utk Unlimited)",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then 
+            if num > 25 then num = 25 end; if num < 1 then num = 1 end; customLimit = math.floor(num)
+        else customLimit = "Unlimited" end
+        sendNotification("Batas Limit Kaitun diatur ke: " .. tostring(customLimit))
+    end
+})
+
+Tabs.Kaitun:AddButton({
+    Text = "📍 1. Set Lahan Biasa (Berdiri disini)",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z)
+            if flatLook.Magnitude > 0 then flatLook = flatLook.Unit else flatLook = Vector3.new(0, 0, -1) end
+            local lookAtPos = hrp.Position + flatLook
+            
+            savedPlantLocationCFrame = CFrame.lookAt(hrp.Position, lookAtPos)
+            kaitunPlantModeData = {x=0, z=0, dx=0, dz=-1, lineStep=1, circleStep=1, circleRadius=0.2, maxCircleSteps=6}
+            
+            if writefile then
+                pcall(function()
+                    writefile(kaitunPosConfigFile, HttpService:JSONEncode({
+                        x = hrp.Position.X, y = hrp.Position.Y, z = hrp.Position.Z,
+                        lx = lookAtPos.X, ly = lookAtPos.Y, lz = lookAtPos.Z
+                    }))
+                end)
+            end
+            
+            sendNotification("✅ Posisi Lahan Tersimpan secara Permanen!")
+        end
+    end
+})
+
+Tabs.Kaitun:AddButton({
+    Text = "🔍 2. Scan Bibit Di Tas",
+    Callback = function()
+        pcall(function()
+            sendNotification("⏳ Sedang memindai tas Anda...")
+            local foundBibit = {}
+            local char = player.Character
+            local backpack = player:FindFirstChild("Backpack")
+            
+            local function cleanBibitName(name) 
+                local base = string.gsub(name, "%s*[%[%(]?%d+[%]%)]?$", "")
+                base = string.gsub(base, "%s*[xX]%d+$", "")
+                return string.match(base, "^%s*(.-)%s*$") or name 
+            end
+            
+            local function cekItem(item) 
+                if item:IsA("Tool") then 
+                    local namaLower = string.lower(item.Name)
+                    if string.find(namaLower, "bibit") and not string.find(namaLower, "sawit") and not string.find(namaLower, "durian") then 
+                        foundBibit[cleanBibitName(item.Name)] = true 
+                    end 
+                end 
+            end
+            
+            if char then for _, item in ipairs(char:GetChildren()) do cekItem(item) end end
+            if backpack then for _, item in ipairs(backpack:GetChildren()) do cekItem(item) end end
+            
+            local options1 = {}
+            local options2 = {"❌ Single Seeds"}
+            for k, _ in pairs(foundBibit) do table.insert(options1, k); table.insert(options2, k) end
+            if #options1 == 0 then table.insert(options1, "Tidak ada bibit di tas") end
+            
+            if _G.DropKaitun1 then _G.DropKaitun1:Refresh(options1); _G.DropKaitun1:SetValue(options1[1]) end
+            if _G.DropKaitun2 then _G.DropKaitun2:Refresh(options2); _G.DropKaitun2:SetValue(options2[1]) end
+            sendNotification("✅ Scan selesai! Silakan pilih bibit di bawah.")
+        end)
+    end
+})
+
+_G.DropKaitun1 = Tabs.Kaitun:AddDropdown({ Text = "🔽 Pilih Bibit 1...", Items = {"Scan Bibit Dulu!"}, Multi = false, Default = "Scan Bibit Dulu!", Callback = function(v) selectedBibit1Name = v; sendNotification("Bibit 1 dipilih: " .. v) end })
+_G.DropKaitun2 = Tabs.Kaitun:AddDropdown({ Text = "🔽 Pilih Bibit 2 (Opsional)...", Items = {"Scan Bibit Dulu!"}, Multi = false, Default = "Scan Bibit Dulu!", Callback = function(v) if v == "❌ Single Seeds" then selectedBibit2Name = nil; sendNotification("Mode Single Seed diaktifkan.") else selectedBibit2Name = v; sendNotification("Bibit 2 dipilih: " .. v) end end })
+
+Tabs.Kaitun:AddDropdown({ Text = "🔄 Mode Kaitun", Items = kaitunModesText, Multi = false, Default = kaitunModesText[1], Callback = function(v) for i, text in ipairs(kaitunModesText) do if text == v then currentKaitunMode = i break end end end })
+
+local limitSapi = 15 -- Default maksimal
+
+local listLevelSapi = {
+    "Level 1 (3 Sapi)",
+    "Level 2 (6 Sapi)",
+    "Level 3 (9 Sapi)",
+    "Level 4 (12 Sapi)",
+    "Level 5 (15 Sapi)"
+}
+
+Tabs.Kaitun:AddDropdown({ 
+    Text = "🐄 Level Kandang Sapi", 
+    Items = listLevelSapi, 
+    Multi = false, 
+    Default = listLevelSapi[5], 
+    Callback = function(v) 
+        if v == "Level 1 (3 Sapi)" then limitSapi = 3
+        elseif v == "Level 2 (6 Sapi)" then limitSapi = 6
+        elseif v == "Level 3 (9 Sapi)" then limitSapi = 9
+        elseif v == "Level 4 (12 Sapi)" then limitSapi = 12
+        elseif v == "Level 5 (15 Sapi)" then limitSapi = 15
+        end
+        sendNotification("✅ Target sapi diubah menjadi " .. tostring(limitSapi) .. " ekor!")
+    end 
+})
+
+local TogKaitunPrivate = Tabs.Kaitun:AddToggle({ Text = "🌴 Auto Lahan Private (Setelah Ayam)", Default = false, Callback = function(v) isKaitunPrivate = v end })
+
+Tabs.Kaitun:AddParagraph({ Title = "💰 AUTO SELL (KAITUN)", Content = "Akan otomatis menjual ke NPC HANYA JIKA urusan kandang (panen & kasih makan) sudah selesai." })
+local TogKaitunSellEgg = Tabs.Kaitun:AddToggle({ Text = "💰 Auto Sell Telur", Default = false, Callback = function(v) isKaitunSellEgg = v end })
+local TogKaitunSellMilk = Tabs.Kaitun:AddToggle({ Text = "💰 Auto Sell Susu", Default = false, Callback = function(v) isKaitunSellMilk = v end })
+local TogKaitunSellDurian = Tabs.Kaitun:AddToggle({ Text = "💰 Auto Sell Durian", Default = false, Callback = function(v) isKaitunSellDurian = v end })
+local TogKaitunSellSawit = Tabs.Kaitun:AddToggle({ Text = "💰 Auto Sell Sawit", Default = false, Callback = function(v) isKaitunSellSawit = v end })
+
+local TogStartKaitun
+TogStartKaitun = Tabs.Kaitun:AddToggle({ 
+    Text = "🚀 START AUTO KAITUN PINTAR", 
+    Default = false,
+    Callback = function(state)
+        if state and checkSALock() then
+            TogStartKaitun:SetValue(false)
+            return
+        end
+
+        if state and (not savedPlantLocationCFrame or not selectedBibit1Name) then 
+            isKaitunActive = false
+            TogStartKaitun:SetValue(false)
+            sendNotification("⚠️ Wajib Set Posisi (Step 1) & Pilih Bibit (Step 2)!")
+            return 
+        end
+
+        isKaitunActive = state
+        if isKaitunActive then
+            TogGlobalDash:SetValue(true) 
+            sendNotification("🔥 Memulai Auto Kaitun Pintar!")
+            task.spawn(function()
+                local RemotesFolder = ReplicatedStorage:WaitForChild("Remotes", 5)
+                local plantLahanCrop = RemotesFolder and RemotesFolder:WaitForChild("TutorialRemotes", 5):FindFirstChild("PlantLahanCrop")
+                local plantCrop = RemotesFolder and RemotesFolder:WaitForChild("TutorialRemotes", 5):FindFirstChild("PlantCrop")
+                
+                while isKaitunActive do
+                    task.wait(1)
+                    if isPriorityTaskActive then continue end
+                    
+                    local char = player.Character;
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if not hrp then continue end
+                    local myUserId = tostring(player.UserId);
+                    local hasDoneActionThisLoop = false
+                    isPriorityTaskActive = true 
+
+                    pcall(function()
+                        -- 1. LAHAN BESAR (UMUM)
+                        if not hasDoneActionThisLoop and (currentKaitunMode == 1 or currentKaitunMode == 2 or currentKaitunMode == 3) then
+                            if not myLockedLahan or not myLockedLahan.Parent then
+                                currentStatusText = "Mencari & Claim Lahan Besar..."
+                                local succ, plot = autoClaimPlot("AreaTanamBesar", "Lahan Besar", true)
+                                if succ then myLockedLahan = plot; hasDoneActionThisLoop = true else currentStatusText = "⚠️ Lahan Besar Penuh!"; task.wait(3) end
+                            else
+                                local lahanPos = myLockedLahan:GetPivot().Position; local activeCrops = workspace:FindFirstChild("ActiveCrops"); local hasSawit = false; local hasDurian = false; local panenBesar = {}
+                                if activeCrops then
+                                    for _, crop in ipairs(activeCrops:GetChildren()) do
+                                        if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) and (crop:GetPivot().Position - lahanPos).Magnitude < 45 then
+                                            local prompt = crop:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                            local cName = string.lower(crop:GetAttribute("SeedType") or (prompt and prompt.ObjectText) or crop.Name)
+                                            if string.find(cName, "sawit") then hasSawit = true end;
+                                            if string.find(cName, "durian") then hasDurian = true end
+                                            if prompt and prompt.Enabled then table.insert(panenBesar, {crop=crop, prompt=prompt}) end
+                                        end
+                                    end
+                                end
+                                if #panenBesar > 0 then
+                                    currentStatusText = "Panen Lahan Besar..."
+                                    for _, data in ipairs(panenBesar) do pcall(function() hrp.CFrame = data.crop:GetPivot() * CFrame.new(0, 3, 0) end);
+                                    task.wait(0.4); if fireproximityprompt then pcall(function() fireproximityprompt(data.prompt, 1, true) end) end;
+                                    task.wait(0.5) end
+                                    hasDoneActionThisLoop = true
+                                elseif not hasSawit or not hasDurian then
+                                    currentStatusText = "Menanam di Lahan Besar..."
+                                    pcall(function() hrp.CFrame = CFrame.new(lahanPos + Vector3.new(0, 3, 0)) end);
+                                    task.wait(0.5)
+                                    if not hasSawit and cariDanPegang("Bibit Sawit") then if plantLahanCrop then plantLahanCrop:FireServer(lahanPos + Vector3.new(3.5, 0, 3.5)) end;
+                                    task.wait(1); hasDoneActionThisLoop = true end
+                                    if not hasDurian and cariDanPegang("Bibit Durian") then if plantLahanCrop then plantLahanCrop:FireServer(lahanPos + Vector3.new(-3.5, 0, -3.5)) end;
+                                    task.wait(1); hasDoneActionThisLoop = true end
+                                end
+                            end
+                        end
+
+                        -- 2. KANDANG AYAM (Collect & Feed)
+                        if not hasDoneActionThisLoop and (currentKaitunMode == 1 or currentKaitunMode == 3) then
+                            local coopPlot = getPlot("Coop_CoopPlot_")
+                            if not coopPlot then
+                                currentStatusText = "Mencari & Claim Kandang Ayam..."
+                                local succ, _ = autoClaimPlot("CoopPlots", "Kandang Ayam", false)
+                                if succ then hasDoneActionThisLoop = true else currentStatusText = "⚠️ Kandang Ayam Penuh!";
+                                task.wait(3) end
+                            else
+                                for i = 1, 12 do
+                                    if hasDoneActionThisLoop then break end
+                                    local eggVisual = coopPlot:FindFirstChild("EggVisual_" .. tostring(i));
+                                    local eggPrompt = eggVisual and eggVisual:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                    local slotMarkers = coopPlot:FindFirstChild("SlotMarkers");
+                                    local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                    if eggPrompt and eggPrompt.Enabled then
+                                        currentStatusText = "Mengambil Telur Ayam..."
+                                        pcall(function() hrp.CFrame = (eggVisual:IsA("Model") and eggVisual:GetPivot() or eggVisual.CFrame) * CFrame.new(0, 3, 0) end);
+                                        task.wait(0.3); if fireproximityprompt then pcall(function() fireproximityprompt(eggPrompt, 1, true) end); task.wait(0.5);
+                                        hasDoneActionThisLoop = true end
+                                    elseif feedPrompt and feedPrompt.Enabled then
+                                        currentStatusText = "Memberi Makan Ayam..."
+                                        pcall(function() hrp.CFrame = (slot:IsA("Model") and slot:GetPivot() or slot.CFrame) * CFrame.new(0, 3, 0) end);
+                                        task.wait(0.3); if fireproximityprompt then pcall(function() fireproximityprompt(feedPrompt, 1, true) end); autoConfirmUI(); task.wait(0.6);
+                                        hasDoneActionThisLoop = true end
+                                    end
+                                end
+                            end
+                        end
+
+                        -- 2.5 LAHAN PRIVATE (Di dalam Kandang Ayam)
+                        if not hasDoneActionThisLoop and isKaitunPrivate then
+                            local coopPlot = getPlot("Coop_CoopPlot_")
+                            if coopPlot then
+                                local areaBesar = coopPlot:FindFirstChild("AreaTanamBesarPrivate") or coopPlot:FindFirstChild("AreaTanamBesar")
+                                if areaBesar then
+                                    local lahanPos = getCFrameFromObj(areaBesar).Position
+                                    local activeCrops = workspace:FindFirstChild("ActiveCrops")
+                                    local hasSawit = false
+                                    local hasDurian = false
+                                    local panenBesar = {}
+                                    
+                                    if activeCrops then
+                                        for _, crop in ipairs(activeCrops:GetChildren()) do
+                                            if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) and (crop:GetPivot().Position - lahanPos).Magnitude < 45 then
+                                                local prompt = crop:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                                local cName = string.lower(crop:GetAttribute("SeedType") or (prompt and prompt.ObjectText) or crop.Name)
+                                                if string.find(cName, "sawit") then hasSawit = true end
+                                                if string.find(cName, "durian") then hasDurian = true end
+                                                if prompt and prompt.Enabled then table.insert(panenBesar, {crop=crop, prompt=prompt}) end
+                                            end
+                                        end
+                                    end
+                                    
+                                    if #panenBesar > 0 then
+                                        currentStatusText = "Panen Lahan Private..."
+                                        for _, data in ipairs(panenBesar) do pcall(function() hrp.CFrame = data.crop:GetPivot() * CFrame.new(0, 3, 0) end);
+                                        task.wait(0.4); if fireproximityprompt then pcall(function() fireproximityprompt(data.prompt, 1, true) end) end;
+                                        task.wait(0.5) end
+                                        hasDoneActionThisLoop = true
+                                    elseif not hasSawit or not hasDurian then
+                                        currentStatusText = "Menanam di Lahan Private..."
+                                        pcall(function() hrp.CFrame = CFrame.new(lahanPos + Vector3.new(0, 3, 0)) end);
+                                        task.wait(0.5)
+                                        if not hasSawit and cariDanPegang("Bibit Sawit") then if plantLahanCrop then plantLahanCrop:FireServer(lahanPos + Vector3.new(3.5, 0, 3.5)) end;
+                                        task.wait(1); hasDoneActionThisLoop = true end
+                                        if not hasDurian and cariDanPegang("Bibit Durian") then if plantLahanCrop then plantLahanCrop:FireServer(lahanPos + Vector3.new(-3.5, 0, -3.5)) end;
+                                        task.wait(1); hasDoneActionThisLoop = true end
+                                    end
+                                end
+                            end
+                        end
+
+                        -- 3. KANDANG SAPI (Collect & Feed)
+                        if not hasDoneActionThisLoop and (currentKaitunMode == 1) then
+                            local barnPlot = getPlot("Barn_Plot_")
+                            if not barnPlot then
+                                currentStatusText = "Mencari & Claim Kandang Sapi..."
+                                local succ, _ = autoClaimPlot("BarnPlots", "Kandang Sapi", false)
+                                if succ then hasDoneActionThisLoop = true else currentStatusText = "⚠️ Kandang Sapi Penuh!";
+                                task.wait(3) end
+                            else
+                                for i = 1, limitSapi do
+                                    if hasDoneActionThisLoop then break end
+                                    local milkVisual = barnPlot:FindFirstChild("MilkVisual_" .. tostring(i));
+                                    local milkPrompt = milkVisual and milkVisual:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                    local slotMarkers = barnPlot:FindFirstChild("SlotMarkers");
+                                    local slot = slotMarkers and slotMarkers:FindFirstChild("Slot" .. tostring(i)); local feedPrompt = slot and slot:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                    if milkPrompt and milkPrompt.Enabled then
+                                        currentStatusText = "Memerah Susu Sapi..."
+                                        pcall(function() hrp.CFrame = (milkVisual:IsA("Model") and milkVisual:GetPivot() or milkVisual.CFrame) * CFrame.new(0, 3, 0) end);
+                                        task.wait(0.3); if fireproximityprompt then pcall(function() fireproximityprompt(milkPrompt, 1, true) end); task.wait(0.5);
+                                        hasDoneActionThisLoop = true end
+                                    elseif feedPrompt and feedPrompt.Enabled then
+                                        currentStatusText = "Memberi Makan Sapi..."
+                                        pcall(function() hrp.CFrame = (slot:IsA("Model") and slot:GetPivot() or slot.CFrame) * CFrame.new(0, 3, 0) end);
+                                        task.wait(0.3); if fireproximityprompt then pcall(function() fireproximityprompt(feedPrompt, 1, true) end); autoConfirmUI(); task.wait(0.6);
+                                        hasDoneActionThisLoop = true end
+                                    end
+                                end
+                            end
+                        end
+
+                        -- 4. LOGIKA AUTO SELL DI KAITUN
+                        if not hasDoneActionThisLoop and (isKaitunSellEgg or isKaitunSellMilk or isKaitunSellDurian or isKaitunSellSawit) then
+                            local hasEgg = false; local hasMilk = false; local hasDurian = false; local hasSawit = false
+                            local c = player.Character; local bp = player:FindFirstChild("Backpack")
+                            local function ck(p) 
+                                if p then 
+                                    for _,i in ipairs(p:GetChildren()) do 
+                                        if i:IsA("Tool") then 
+                                            local n = string.lower(i.Name)
+                                            if string.find(n, "egg") or string.find(n, "telur") then hasEgg = true end
+                                            if string.find(n, "milk") or string.find(n, "susu") then hasMilk = true end
+                                            if string.find(n, "durian") and not string.find(n, "bibit") then hasDurian = true end
+                                            if string.find(n, "sawit") and not string.find(n, "bibit") then hasSawit = true end
+                                        end 
+                                    end 
+                                end 
+                            end
+                            ck(c); ck(bp)
+
+                            if isKaitunSellEgg and hasEgg then
+                                currentStatusText = "Menjual Telur (Kaitun)..."
+                                local prompt = workspace:FindFirstChild("NPCs") and workspace.NPCs:FindFirstChild("NPCPedagangTelur") and workspace.NPCs.NPCPedagangTelur:FindFirstChild("NPCPedagangTelur") and workspace.NPCs.NPCPedagangTelur.NPCPedagangTelur:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                if prompt and prompt.Enabled then
+                                    pcall(function() hrp.CFrame = prompt.Parent.CFrame * CFrame.new(0, 3, 0) end); task.wait(0.5)
+                                    if fireproximityprompt then pcall(function() fireproximityprompt(prompt, 1, true) end); autoConfirmUI(); task.wait(1.5) end
+                                    hasDoneActionThisLoop = true
+                                end
+                            elseif isKaitunSellMilk and hasMilk then
+                                currentStatusText = "Menjual Susu (Kaitun)..."
+                                local prompt = workspace:FindFirstChild("NPCs") and workspace.NPCs:FindFirstChild("NPCPedagangSusu") and workspace.NPCs.NPCPedagangSusu:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                if prompt and prompt.Enabled then
+                                    pcall(function() hrp.CFrame = prompt.Parent.CFrame * CFrame.new(0, 3, 0) end); task.wait(0.5)
+                                    if fireproximityprompt then pcall(function() fireproximityprompt(prompt, 1, true) end); autoConfirmUI(); task.wait(1.5) end
+                                    hasDoneActionThisLoop = true
+                                end
+                            elseif isKaitunSellDurian and hasDurian then
+                                currentStatusText = "Menjual Durian (Kaitun)..."
+                                local npcPrompt = workspace:FindFirstChild("NPCs") and workspace.NPCs:FindFirstChild("NPC_PedagangSawit") and workspace.NPCs.NPC_PedagangSawit:FindFirstChild("NPCPedagangSawit") and workspace.NPCs.NPC_PedagangSawit.NPCPedagangSawit:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                if npcPrompt and npcPrompt.Enabled then
+                                    pcall(function() hrp.CFrame = npcPrompt.Parent.CFrame * CFrame.new(0, 3, 0) end); task.wait(0.5)
+                                    if fireproximityprompt then pcall(function() fireproximityprompt(npcPrompt, 1, true) end); task.wait(1); autoClickBuahUI("Durian"); task.wait(1.5) end
+                                    hasDoneActionThisLoop = true
+                                end
+                            elseif isKaitunSellSawit and hasSawit then
+                                currentStatusText = "Menjual Sawit (Kaitun)..."
+                                local npcPrompt = workspace:FindFirstChild("NPCs") and workspace.NPCs:FindFirstChild("NPC_PedagangSawit") and workspace.NPCs.NPC_PedagangSawit:FindFirstChild("NPCPedagangSawit") and workspace.NPCs.NPC_PedagangSawit.NPCPedagangSawit:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                if npcPrompt and npcPrompt.Enabled then
+                                    pcall(function() hrp.CFrame = npcPrompt.Parent.CFrame * CFrame.new(0, 3, 0) end); task.wait(0.5)
+                                    if fireproximityprompt then pcall(function() fireproximityprompt(npcPrompt, 1, true) end); task.wait(1); autoClickBuahUI("Sawit"); task.wait(1.5) end
+                                    hasDoneActionThisLoop = true
+                                end
+                            end
+                        end
+
+                        -- 5. LAHAN BIASA (Tanam / Plant)
+                        if not hasDoneActionThisLoop and savedPlantLocationCFrame then
+                            if customLimit == "Unlimited" or plantedCount < customLimit then
+                                currentStatusText = "Menanam Bibit Pilihan..."
+                                local failCount = 0
+                                
+                                pcall(function() 
+                                    hrp.Velocity = Vector3.zero 
+                                    hrp.CFrame = savedPlantLocationCFrame 
+                                end)
+                                task.wait(0.2)
+                                
+                                while isKaitunActive and (customLimit == "Unlimited" or plantedCount < customLimit) and failCount < 3 do
+                                    local targetBibit = selectedBibit1Name
+                                    if selectedBibit2Name ~= nil and currentKaitunTurn == 2 then targetBibit = selectedBibit2Name end
+                                    
+                                    if cariDanPegang(targetBibit) then
+                                        if plantCrop then
+                                            local targetPos = getPlantPos(plantModes[currentPlantModeIndex], savedPlantLocationCFrame.Position, savedPlantLocationCFrame, 0.2, kaitunPlantModeData)
+                                            plantCrop:FireServer(targetPos)
+                                            plantedCount = plantedCount + 1 
+                                            if selectedBibit2Name ~= nil then currentKaitunTurn = (currentKaitunTurn == 1) and 2 or 1 end
+                                            task.wait(0.1) 
+                                        end
+                                    else failCount = failCount + 1;
+                                    task.wait(0.2) end
+                                end
+                                if failCount >= 3 then currentStatusText = "⚠️ Bibit Habis / Gagal!";
+                                sendNotification("⚠️ Bibit habis! Script menunda tanam."); task.wait(3) end
+                                hasDoneActionThisLoop = true
+                            end
+                        end
+
+                        -- 6. LAHAN BIASA (Panen / Harvest)
+                        if not hasDoneActionThisLoop then
+                            local activeCrops = workspace:FindFirstChild("ActiveCrops")
+                            if activeCrops then
+                                for _, crop in ipairs(activeCrops:GetChildren()) do
+                                    if hasDoneActionThisLoop then break end
+                                    if string.find(crop.Name, "Crop_") and string.find(crop.Name, myUserId) and not isCropBesar(crop) then
+                                        local prompt = crop:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                        if prompt and prompt.Enabled then
+                                            local cropPos = crop:IsA("Model") and crop:GetPivot().Position or crop.Position
+                                            if (cropPos - hrp.Position).Magnitude <= 20 then
+                                                currentStatusText = "Auto Panen Lahan Biasa..."
+                                                pcall(function() if fireproximityprompt then fireproximityprompt(prompt, 1, true) end end);
+                                                task.wait(0.2)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+
+                    if hasDoneActionThisLoop then 
+                        if savedPlantLocationCFrame then
+                            pcall(function() 
+                                hrp.Velocity = Vector3.zero
+                                char:PivotTo(savedPlantLocationCFrame) 
+                            end)
+                        end
+                    else 
+                        currentStatusText = "Menunggu Waktu... (Standby)" 
+                    end
+                    
+                    isPriorityTaskActive = false 
+                end
+                currentStatusText = "Kaitun Berhenti."
+            end)
+        else 
+            currentStatusText = "Kaitun Berhenti."
+            if not isStandAloneAutoPlant then TogGlobalDash:SetValue(false) end 
+            sendNotification("🛑 Auto Kaitun Dihentikan!") 
+        end
+    end
+})
