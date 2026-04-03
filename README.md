@@ -1,5 +1,5 @@
 # MigiiHUB
-Script by migii
+Script Roblox by migii
 support game
   - Sawah indo
   - Dance now
