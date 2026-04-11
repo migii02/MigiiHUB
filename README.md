@@ -4,6 +4,7 @@ support game
   - Sawah indo
   - Dance now
   - Indo Hangout
+  - Desa rayap 
 
 
 untuk sementara baru support 3 game. bantu support untuk kembangin script ini guys
