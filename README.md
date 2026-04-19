@@ -6,9 +6,11 @@ support game
   - Indo Hangout
   - Desa rayap
   - Sambung kata
+  - Violent district
 
 
-untuk fitur fitur game ini bisa di liat [disini](https://raw.githubusercontent.com/migii02/MigiiHUB/refs/heads/main/GameList/Feauture%20info)
+untuk fitur fitur game ini bisa di liat [disini](https://migii02.github.io/migiiweb/)
+
 
 
 etc new fitur
@@ -16,7 +18,7 @@ etc new fitur
 
 
 
-untuk sementara baru support 5 game. bantu support untuk kembangin script ini guys
+untuk sementara baru support 6 game. bantu support untuk kembangin script ini guys
 
 jika ada yang mau sawer boleh kesini
 https://saweria.co/migii
