@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MIGII HUB</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+        :root{
+            /* Modern Dark Theme Colors */
+            --bg: #09090b;          
+            --card: #18181b;        
+            --card-hover: #27272a;  
+            --border: #27272a;      
+            --text: #f8fafc;        
+            --dim: #a1a1aa;         
+            --primary: #6366f1;     
+            --primary-hover: #4f46e5;
+            --discord: #5865F2;
+            --green: #10b981;
+            --red: #ef4444;
+            --r-box: 20px;
+            --r-pill: 99px;
+            --max-w: 500px; /* Ukuran Mobile */
+        }
+
+        body{
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap{max-width:var(--max-w);margin:0 auto;padding:0 16px;position:relative; transition: max-width 0.3s ease;}
+
+        /* Top Bar */
+        .dbar{text-align:center;padding:10px 0;font-size:11px;color:var(--dim); font-weight: 500;}
+
+        /* Header */
+        .hdr{text-align:center;padding:24px 0 20px}
+        .logo{
+            width:84px;height:84px;border-radius:24px;
+            object-fit:cover;margin-bottom:16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            background: var(--card);
+        }
+        .hdr h1{font-size:26px;font-weight:800; letter-spacing: -0.5px;}
+        .hdr p{color:var(--dim);font-size:13px;margin-top:4px; font-weight: 500;}
+
+        /* Community / Discord Card */
+        .dc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-box);padding:24px;margin:12px 0;text-align:center;}
+        .dc-ico{width:40px;height:40px;border-radius:12px;background:rgba(88, 101, 242, 0.1);display:flex;align-items:center;justify-content:center; margin: 0 auto 12px;}
+        .dc-ico svg{width:22px;height:22px;fill:var(--discord)}
+        .dc h2{font-size:16px;font-weight:700; margin-bottom: 4px;}
+        .dc .sub{color:var(--dim);font-size:12px;margin-bottom:16px;}
+
+        .m-row{display:flex;justify-content:center;gap:12px;margin-bottom:20px;}
+        .m-box{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);padding:8px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:600;}
+        .dot{width:8px;height:8px;border-radius:50%}
+        .dot-g{background:var(--green);box-shadow:0 0 8px rgba(16, 185, 129, 0.5);}
+
+        /* Modern Buttons */
+        .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s ease;}
+        .btn:active{transform:scale(.97)}
+        .btn-dc{background: var(--discord); color: #fff;}
+        .btn-dc:hover{background: #4752C4;}
+        .btn-don{background: var(--bg); color: var(--text); border: 1px solid var(--border); margin-top: 10px;}
+        .btn-don:hover{background: var(--border);}
+        .btn svg{width:18px;height:18px;fill:currentColor}
+
+        /* Tabs Navigation */
+        .tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:6px;margin:24px 0;gap:6px}
+        .tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:none;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;border-radius:10px;font-family:inherit;transition:all .2s;}
+        .tab svg{width:16px;height:16px;fill:currentColor}
+        .tab.act{background:var(--bg); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
+
+        .tpanel{display:none}
+        .tpanel.act{display:block;animation:fadeIn .3s ease-out}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Universal Script Card */
+        .usc { background: var(--card); border: 1px solid var(--primary); border-radius: 16px; padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1); }
+        .usc-info h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .usc-info p { font-size: 12px; color: var(--dim); }
+        .btn-copy { background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: all .2s ease; white-space: nowrap; }
+        .btn-copy:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-copy:active { transform: scale(0.96); }
+
+        /* Search Box */
+        .search-box { display: flex; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; margin-bottom: 24px; transition: border .2s;}
+        .search-box:focus-within { border-color: var(--primary); }
+        .search-box svg { width: 18px; height: 18px; fill: var(--dim); margin-right: 12px; }
+        .search-box input { flex: 1; background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 14px; outline: none; }
+        .search-box input::placeholder { color: var(--dim); }
+
+        /* Section Titles */
+        .sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; padding: 0 4px;}
+        .sec-t{font-size:14px;font-weight:700;}
+        .sec-c{font-size:12px;color:var(--dim); font-weight: 500;}
+
+        /* Modern List Items (Bisa diklik) */
+        .list{display:flex;flex-direction:column;gap:10px}
+        .item{display:flex;align-items:center;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;gap:16px;transition:all .2s ease; cursor: pointer; position: relative;}
+        .item:hover{background: var(--card-hover); border-color: #3f3f46; transform: translateY(-2px);}
+        .item-img{
+            width:52px;height:52px;border-radius:12px;
+            object-fit:cover;background:var(--bg);
+            flex-shrink:0;border:1px solid var(--border);
+        }
+        .item-info{flex:1;min-width:0}
+        .item-name{font-size:14px;font-weight:600;color:var(--text); margin-bottom: 4px; white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .item-click-hint {position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); opacity: 0; transition: opacity .2s; font-size: 12px; font-weight: 600; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 8px;}
+        .item:hover .item-click-hint {opacity: 1;}
+
+        /* Status Badges */
+        .st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600; padding: 4px 10px; border-radius: 99px;}
+        .st-w{background: rgba(16, 185, 129, 0.1); color: var(--green);}
+        .st-p{background: rgba(239, 68, 68, 0.1); color: var(--red);}
+        .st-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor;}
+
+        /* MODAL POPUP CHANGELOG */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; visibility: hidden;
+            transition: all .3s ease;
+        }
+        .modal-overlay.act { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            width: 100%; max-width: 420px;
+            max-height: 85vh;
+            display: flex; flex-direction: column;
+            transform: scale(0.95) translateY(10px);
+            transition: all .3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .modal-overlay.act .modal-box { transform: scale(1) translateY(0); }
+        .modal-hdr { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+        .modal-hdr h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+        .modal-close { background: var(--bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; color: var(--dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; }
+        .modal-close:hover { background: var(--border); color: var(--text); }
+        
+        /* Modal Body & Feature Formatting */
+        .modal-body { padding: 24px; overflow-y: auto; }
+        .feat-group { margin-bottom: 20px; }
+        .feat-group:last-child { margin-bottom: 0; }
+        .feat-cat { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .feat-list { list-style: none; margin-left: 0; }
+        .feat-list li { position: relative; padding-left: 16px; margin-bottom: 6px; font-size: 13px; color: #e4e4e7; line-height: 1.5; }
+        .feat-list li::before { content: "•"; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+
+        /* FAQ Styling */
+        .faq{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden; transition: background .2s;}
+        .faq:hover {background: var(--card-hover);}
+        .faq-q{padding:18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:13px;font-weight:600;}
+        .faq-q svg{width:16px;height:16px;fill:var(--dim);transition:transform .3s}
+        .faq.open .faq-q svg{transform:rotate(180deg); fill: var(--text);}
+        .faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+        
+        /* WARNA TEKS JAWABAN FAQ DIPERTERANG */
+        .faq-a-in{padding:0 18px 18px;font-size:13px;color:#d4d4d8;line-height:1.6} 
+        .faq.open .faq-a{max-height:800px} /* Height dibesarkan agar tidak kepotong */
+
+        /* Footer */
+        .ft{text-align:center;padding:32px 0;margin-top:20px;}
+        .ft p{font-size:12px;color:var(--dim); font-weight: 500;}
+
+        /* ========================================= */
+        /* PC / DESKTOP MODE RESPONSIVE (GRID 2 KOLOM) */
+        /* ========================================= */
+        @media(min-width: 768px) {
+            :root { --max-w: 800px; } /* Lebar maksimal di PC ditingkatkan */
+            .list { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); /* Membagi daftar jadi 2 kolom menyamping */
+                gap: 16px; 
+            }
+            .hdr h1 { font-size: 32px; }
+            .dc { padding: 32px; }
+            .tabs { padding: 8px; margin: 32px 0 24px; }
+            .tab { padding: 14px; font-size: 14px; }
+            .usc { padding: 24px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+
+    <div class="dbar" id="dbar">Loading Interface...</div>
+
+    <header class="hdr">
+        <img class="logo" id="logo" src="" alt="Logo">
+        <h1 id="siteName"></h1>
+        <p id="siteDesc"></p>
+    </header>
+
+    <div class="dc">
+        <div class="dc-ico">
+            <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        </div>
+        <h2>Community Server</h2>
+        <p class="sub">Dapatkan update script dan info terbaru</p>
+        
+        <div class="m-row">
+            <div class="m-box"><span class="dot dot-g"></span><b id="onC">...</b> Online</div>
+            <div class="m-box"><b id="totC">...</b> Members</div>
+        </div>
+        
+        <a href="#" class="btn btn-dc" id="dcL" target="_blank">Join Discord Server</a>
+        <a href="#" class="btn btn-don" id="donL" target="_blank">Support Us</a>
+    </div>
+
+    <div class="tabs">
+        <button class="tab act" data-target="scripts" onclick="switchTab('scripts')">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            Scripts List
+        </button>
+        <button class="tab" data-target="faq" onclick="switchTab('faq')">
+            <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+            Information
+        </button>
+    </div>
+
+    <div class="tpanel act" id="t-scripts">
+        
+        <div class="usc">
+            <div class="usc-info">
+                <h3>Universal Script Loader</h3>
+                <p>Satu script untuk bypass semua game</p>
+            </div>
+            <button class="btn-copy" onclick="copyUniversalScript(this)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                Copy Script
+            </button>
+        </div>
+
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="searchInput" placeholder="Cari script game..." oninput="filterScripts()">
+        </div>
+        
+        <div class="sec-h">
+            <div class="sec-t">Available Games</div>
+            <div class="sec-c" id="sCount"></div>
+        </div>
+        
+        <div class="list" id="sList"></div>
+    </div>
+
+    <div class="tpanel" id="t-faq">
+        <div class="sec-h"><div class="sec-t">Frequently Asked Questions</div></div>
+        <div id="faqList"></div>
+    </div>
+
+    <footer class="ft">
+        <p>© 2026 MIGII HUB. All rights reserved.</p>
+    </footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <h3 id="modalTitle">Fitur Script</h3>
+            <button class="modal-close" onclick="closeModal(event, true)">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// CONFIGURATION
+// ==========================================
+const CONFIG = {
+    NAME: "MIGII HUB",
+    DESC: "Premium Script Provider",
+    LOGO: "https://cdn.discordapp.com/attachments/1412787806262136957/1495318722544537760/file_00000000388c71fab67ac2c36cf64681.png?ex=69e5cf95&is=69e47e15&hm=98a4acb4cbad23ac6d641f4f3f7e75e89fdf97be188514752cc6ffd5d9d3ce98&",
+    DISCORD: "https://discord.gg/Z7fFeRyKb",
+    DONATE: "https://saweria.co/migii"
+};
+
+// ==========================================
+// SCRIPT LIST & FEATURES DATA (URUTAN ABSOLUT)
+// ==========================================
+const SCRIPTS = [
+    { 
+        name: "Dance Now", 
+        placeId: "danceNowID", 
+        img: "https://tr.rbxcdn.com/180DAY-aa068571a0f8714b464a6c39a01cc9fa/768/432/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">Security</div><ul class="feat-list"><li>Anti-Cheat Bypass (Block SyncTelemetry)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Minigame: Sambung Kata</div><ul class="feat-list"><li>Auto Sambung Kata (Integrasi Kamus KBBI)</li><li>Adjustable Typing Delay</li><li>Auto-Correction & Retry</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Classic Mode</div><ul class="feat-list"><li>Auto Anti-Miss</li><li>Auto Beat</li><li>Auto Arrow Typing</li><li>Target Score Selector (Perfect/Cool/Bad/Miss)</li><li>Floating Manual Arrow Button</li><li>Adjustable Arrow Delay & Typing Speed</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Piano Mode</div><ul class="feat-list"><li>Auto Piano Tap & Hold (Support 4 dan 6 Keys)</li><li>Target Score Selector</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Bubble Mode</div><ul class="feat-list"><li>Auto Bubble</li><li>Auto Anti-Miss</li><li>Target Score Selector</li><li>Adjustable Hit Margin</li></ul></div>
+        `
+    },
+    { 
+        name: "Desa Rayap", 
+        placeId: "desarayapID", 
+        img: "https://tr.rbxcdn.com/180DAY-889ab0e0edded83eb2b400df2e9d4588/768/432/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">Dashboard & System</div><ul class="feat-list"><li>Live Farm Tracker</li><li>Discord Webhook Integration (Customizable URL)</li><li>Auto-Reset Statistics</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Auto Farm</div><ul class="feat-list"><li>Auto Farm Besi (Specific Target Selector / Terdekat)</li><li>Auto Farm Belut</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Pertanian (Agriculture)</div><ul class="feat-list"><li>Auto Plant Single Seed & Multi-Seed</li><li>Custom Plant Patterns (Grid, Lingkaran, Menumpuk)</li><li>Adjustable Plant Limit & Spacing</li><li>Auto Harvest (Radius Sekitar & Teleport)</li><li>Auto Buy Bibit</li><li>Auto Sell Hasil Tani</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Fishing</div><ul class="feat-list"><li>Auto Cast (Adjustable Cast Power)</li><li>Auto Tangkap Ikan (Auto Win Minigame)</li><li>Adjustable Minigame Delay</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Avatar Modifier</div><ul class="feat-list"><li>1-Click Copy Player Avatar (Bypass Server)</li><li>Avatar History Manager (Save & Load)</li><li>Restore Original Avatar & Refresh Character</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Teleport & Spectate</div><ul class="feat-list"><li>Teleport ke Semua Toko</li><li>Teleport ke Lahan Tani</li><li>Teleport ke Spot Mancing (Kolam)</li><li>Teleport ke Player Lain</li><li>Spectate View Player Lain</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Shop & Sell</div><ul class="feat-list"><li>Auto/Manual Jual Besi</li><li>Auto/Manual Jual Belut</li><li>Auto/Manual Jual Ikan</li><li>Beli Pancingan & Gergaji Langsung dari UI</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Visuals & Security</div><ul class="feat-list"><li>Streamer Mode / Hide Mode (Fake Nickname & Fake Level)</li><li>Custom RGB Title Bar (Di atas kepala)</li><li>Custom ESP (Menampilkan nama item & status cooldown)</li><li>Auto Return (Otomatis kembali ke lokasi mati & equip tool)</li></ul></div>
+        `
+    },
+    { 
+        name: "Indo Hangout", 
+        placeId: "indohangoutID", 
+        img: "https://tr.rbxcdn.com/180DAY-cc31f16f6f46608c665b6bedd690858f/768/432/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">Auto Farming</div><ul class="feat-list"><li>Auto Catch</li><li>Auto Sell Fish</li><li>Auto Buy Rod</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Trolling & Utility</div><ul class="feat-list"><li>Universal Tool Stealer</li><li>1-Click Copy Avatar</li><li>Avatar History</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Teleport & Spectate</div><ul class="feat-list"><li>Teleport Sell Fish & Rod Shop</li><li>Teleport Fishing Spots</li><li>Teleport & Spectate Player</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Freecam Ultra Pro</div><ul class="feat-list"><li>Seamless Camera</li><li>Cinematic Mode</li><li>Visual Filters</li><li>Custom Speed & Zoom Sliders</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Cinematic Waypoints Manager</div><ul class="feat-list"><li>Custom Camera Path</li><li>Undo, Redo, & Loop</li><li>Auto Presets</li><li>Save & Load Preset</li><li>Immersive Mode</li></ul></div>
+        `
+    },
+    { 
+        name: "Sawah Indo", 
+        placeId: "sawahIndoID", 
+        img: "https://tr.rbxcdn.com/180DAY-b0a374c27019af96688221fd295bc3f8/256/256/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">Sistem UI & Dashboard</div><ul class="feat-list"><li>MigiiHUB Library V2 (Support UI Themes)</li><li>Floating Monitor Panel (Global, Tanaman, Hewan, Inventory)</li><li>Show/Hide Custom Logo Button</li><li>Auto Confirm UI (Static GUI Bypass)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Kaitun (Auto Farming Pintar)</div><ul class="feat-list"><li>4 Mode Kaitun (All In, Lahan Besar & Biasa, +Ayam, Lahan Biasa Only)</li><li>Auto Claim & Urus Lahan Besar (Tanam & Panen Sawit/Durian)</li><li>Auto Claim & Urus Kandang Ayam (Ambil Telur & Kasih Makan)</li><li>Auto Claim & Urus Kandang Sapi (Ambil Susu & Kasih Makan)</li><li>Dukungan Pemilihan Level Kandang Sapi (Level 1-5)</li><li>Auto Eksekusi Lahan Private (Area Ayam & Sapi)</li><li>Auto Sell Hasil Kaitun by Rarity (Telur, Susu, Durian, Sawit)</li><li>Set Lahan Biasa Permanen & Scan Bibit Otomatis</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Stand Alone Auto</div><ul class="feat-list"><li>Auto Claim Lahan Besar, Kandang Ayam & Sapi</li><li>Auto Collect & Feed Hewan Ternak</li><li>Auto Plant Lahan Biasa & Lahan Besar</li><li>Auto Harvest (Radius Sekitar & Teleport)</li><li>Auto Sell Stand Alone (Filter Rarity atau Jual Semua Instan)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Shop & Storage</div><ul class="feat-list"><li>Insta-Buy Bibit via UI (Maks 99, Langsung Masuk Tas)</li><li>Insta-Sell Panen via UI (Dilengkapi Profit Tracker)</li><li>Buka Storage/Bank Jarak Jauh</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Teleportasi & Lokasi</div><ul class="feat-list"><li>Save, Load, & Delete Custom Waypoints</li><li>Teleport ke Seluruh Lahan (Biasa, Besar, Private)</li><li>Teleport ke Seluruh Kandang (Ayam, Sapi)</li><li>Teleport ke Seluruh NPC Shop & Area Publik</li><li>Teleport ke Player Lain (Player Sniper)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">ETC Fitur (Utilitas & Troll)</div><ul class="feat-list"><li>Manual/Auto Sleep (Teleport Instan ke Kasur Kosong)</li><li>Mandi Instan (Teleport ke Bilik Mandi Kosong)</li><li>Pakai Aksesoris Map & Item Event Shope Collab</li><li>Troll Drop Item (Auto Drop Payung & Layang-layang)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Visuals, Security & Logging</div><ul class="feat-list"><li>Mode Hide / Streamer Mode (Ganti Nickname & Level Palsu)</li><li>Mode Terang / Fullbright (Anti Gelap Malam)</li><li>Advanced ESP (Tampilkan Timer & Status Tanaman/Hewan)</li><li>Discord Webhook Sync (Live Report Dashboard ke Discord)</li><li>Auto Return Death & Auto Load Reconnect</li><li>Full Kill Switch (Membersihkan sisa script & UI dari layar)</li><li>Spy to Clipboard (Deteksi Path Prompt)</li></ul></div>
+        `
+    },
+    { 
+        name: "Sambung Kata", 
+        placeId: "sambungKataID", 
+        img: "https://tr.rbxcdn.com/180DAY-153fbf607a2fe806ae19354cc00c6318/256/256/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">Mode Sambung Kata</div><ul class="feat-list"><li>AutoPlay Mode</li><li>Manual Assist Mode (Panel Sugesti)</li><li>Hard Mode (Prioritas akhiran kata susah)</li><li>Reset Word Memory (Manual)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Pengaturan Kecepatan</div><ul class="feat-list"><li>Adjustable Typing Speed</li><li>Adjustable Start Delay</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Informasi & Visual</div><ul class="feat-list"><li>Live Match Indicator Panel</li><li>Word Suggestion Panel (4 Pilihan Kata)</li><li>Auto-Delete Wrong Words</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Sistem & Engine</div><ul class="feat-list"><li>Multi-Source Dictionary Loader (Anti-Lag)</li><li>Keyboard Simulation Engine</li><li>Full Kill Switch & UI Wiper</li></ul></div>
+        `
+    },
+    { 
+        name: "Violent District", 
+        placeId: "violentDistrictID", 
+        img: "https://tr.rbxcdn.com/180DAY-ebde23d7fd4a7b83ba3bf6a3df91d131/256/256/Image/Webp/noFilter", 
+        status: "working",
+        features: `
+            <div class="feat-group"><div class="feat-cat">ESP & Visuals</div><ul class="feat-list"><li>Survivors ESP</li><li>Killers ESP</li><li>Generators ESP</li><li>Hooks ESP</li><li>Gates ESP</li><li>3D Wallhack (Fill)</li><li>Tracers (Line)</li><li>Show Names</li><li>Show HP</li><li>Show Distance</li><li>Fullbright</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Survivor Menu</div><ul class="feat-list"><li>Auto Perfect Skill Check</li><li>Auto Flee (Anti-Killer)</li><li>Adjustable Flee Radius</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Killer Menu</div><ul class="feat-list"><li>Auto Brutal Kill & Hook</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Teleport</div><ul class="feat-list"><li>Teleport to Generators</li><li>Teleport to Exit Gates (1 & 2)</li></ul></div>
+            <div class="feat-group"><div class="feat-cat">Player Mod</div><ul class="feat-list"><li>Unstuck</li><li>Noclip</li><li>Adjustable WalkSpeed</li></ul></div>
+        `
+    },
+];
+
+// ==========================================
+// FAQ DATA (Bisa diklik & terbuka ke bawah)
+// ==========================================
+const FAQ = [
+    { q: "Apa itu Script Roblox?", a: "Script adalah kode tambahan yang dijalankan di game Roblox untuk memberikan fitur ekstra." },
+    { q: "Apakah aman digunakan?", a: "Selalu ada resiko dalam penggunaan script pihak ketiga. Sangat disarankan untuk selalu menggunakan akun alternatif (smurf account)." },
+    { q: "Apa arti status 'Patched'?", a: "Artinya script sedang tidak berfungsi karena game baru saja melakukan update. Menunggu perbaikan dari developer kami." }
+];
+
+// ==========================================
+// CORE FUNCTIONS
+// ==========================================
+
+function init() {
+    document.getElementById('logo').src = CONFIG.LOGO;
+    document.getElementById('siteName').textContent = CONFIG.NAME;
+    document.getElementById('siteDesc').textContent = CONFIG.DESC;
+    document.getElementById('dcL').href = CONFIG.DISCORD;
+    document.getElementById('donL').href = CONFIG.DONATE;
+    
+    // Safety check tab
+    let savedTab = localStorage.getItem('activeHubTab') || 'scripts';
+    if (!document.querySelector(`.tab[data-target="${savedTab}"]`)) {
+        savedTab = 'scripts';
+    }
+    switchTab(savedTab);
+
+    renderFAQ();
+    filterScripts();
+    detectDevice();
+    
+    fetchDiscord();
+    setInterval(fetchDiscord, 60000); 
+}
+
+function detectDevice() {
+    const ua = navigator.userAgent;
+    let deviceType = 'Desktop Device';
+    if (/Android/i.test(ua)) deviceType = 'Android Device';
+    else if (/iPhone|iPad/i.test(ua)) deviceType = 'iOS Device';
+    document.getElementById('dbar').innerHTML = `Connected via ${deviceType}`;
+}
+
+async function fetchDiscord() {
+    try {
+        const code = CONFIG.DISCORD.split('/').pop();
+        const res = await fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true`);
+        const data = await res.json();
+        document.getElementById('onC').textContent = (data.approximate_presence_count || 0).toLocaleString();
+        document.getElementById('totC').textContent = (data.approximate_member_count || 0).toLocaleString();
+    } catch {
+        document.getElementById('onC').textContent = '—';
+        document.getElementById('totC').textContent = '—';
+    }
+}
+
+function switchTab(targetId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
+    document.querySelectorAll('.tpanel').forEach(p => p.classList.remove('act'));
+    document.querySelector(`.tab[data-target="${targetId}"]`).classList.add('act');
+    document.getElementById('t-' + targetId).classList.add('act');
+    localStorage.setItem('activeHubTab', targetId);
+}
+
+// COPY UNIVERSAL SCRIPT
+function copyUniversalScript(btn) {
+    const scriptCode = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/migii02/MigiiHUB/refs/heads/main/Main.lua"))()';
+    navigator.clipboard.writeText(scriptCode).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Tersalin!';
+        btn.style.background = 'var(--green)';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.background = '';
+        }, 2000);
+    });
+}
+
+function filterScripts() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const el = document.getElementById('sList');
+    
+    const filtered = SCRIPTS.filter(s => s.name.toLowerCase().includes(query));
+    
+    const wCount = SCRIPTS.filter(s => s.status === 'working').length;
+    document.getElementById('sCount').textContent = `${wCount} Working`;
+    
+    el.innerHTML = filtered.map(s => `
+        <div class="item" onclick="openModal('${s.name}')">
+            <img class="item-img" src="${s.img}" alt="${s.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzI3MjcyYSIvPjwvc3ZnPg=='">
+            <div class="item-info">
+                <div class="item-name">${s.name}</div>
+                <div class="st ${s.status === 'working' ? 'st-w' : 'st-p'}">
+                    <span class="st-dot"></span>
+                    ${s.status === 'working' ? 'Working' : 'Patched'}
+                </div>
+            </div>
+            <div class="item-click-hint">Lihat Fitur ➔</div>
+        </div>
+    `).join('');
+}
+
+// ==========================================
+// MODAL LOGIC (Menampilkan Fitur)
+// ==========================================
+
+function openModal(gameName) {
+    const overlay = document.getElementById('modalOverlay');
+    const body = document.getElementById('modalBody');
+    const title = document.getElementById('modalTitle');
+
+    const gameData = SCRIPTS.find(s => s.name === gameName);
+
+    title.textContent = `Fitur: ${gameName}`;
+    
+    if (gameData && gameData.features) {
+        body.innerHTML = gameData.features;
+    } else {
+        body.innerHTML = '<div style="color: var(--dim); text-align: center;">Tidak ada data fitur untuk game ini.</div>';
+    }
+    
+    overlay.classList.add('act');
+}
+
+function closeModal(event, forceClose = false) {
+    if (forceClose || event.target.id === 'modalOverlay') {
+        document.getElementById('modalOverlay').classList.remove('act');
+    }
+}
+
+// Render Dropdown FAQ
+function renderFAQ() {
+    document.getElementById('faqList').innerHTML = FAQ.map(f => `
+        <div class="faq" onclick="this.classList.toggle('open')">
+            <div class="faq-q">
+                <span>${f.q}</span>
+                <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+            <div class="faq-a"><div class="faq-a-in">${f.a}</div></div>
+        </div>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
