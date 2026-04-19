@@ -6,6 +6,9 @@ support game
   - Indo Hangout
   - Desa rayap
   - Sambung kata
+untuk fitur fitur game ini bisa di liat disini
+https://raw.githubusercontent.com/migii02/MigiiHUB/refs/heads/main/GameList/Feauture%20info
+
 
 etc new fitur
   - Freecam & change ava (No visual) jika map support catalog
@@ -20,3 +23,4 @@ https://saweria.co/migii
 terimakasih
 
 ©Migii-HUB
+
