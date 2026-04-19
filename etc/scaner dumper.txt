@@ -1,0 +1,158 @@
+-- ==========================================
+-- Migii Dumper (Elite Scanner) | v4.2
+-- CREATOR : Migii
+-- ==========================================
+
+if not decompile or not writefile or not isfolder or not makefolder then
+    warn("Migii Dumper | Executor ini tidak mendukung fungsi decompile atau file system!")
+    return
+end
+
+local MarketplaceService = game:GetService("MarketplaceService")
+local StarterGui = game:GetService("StarterGui")
+
+-- Variable Counter & Logging
+local totalFilesScanned = 0
+local totalFailed = 0
+local failedLogs = {"-- MIGII DUMPER: FAILED DECOMPILES LOG --\n"}
+
+-- ==========================================
+-- FUNGSI PEMBERSIH STRING (Baru di v4.2)
+-- Menghapus emoji dan simbol aneh agar aman di Android
+-- ==========================================
+local function sanitizeString(str)
+    -- Hanya sisakan huruf (%w), spasi (%s), garis bawah (_), dan strip (-)
+    local clean = str:gsub("[^%w%s%-_]", "")
+    -- Hapus spasi berlebih di awal/akhir
+    clean = clean:match("^%s*(.-)%s*$")
+    
+    if clean == "" or clean == nil then
+        return "Unknown_Name"
+    end
+    return clean
+end
+
+-- 1. Setup Struktur Folder Dasar
+local BASE_FOLDER = "MigiiHub"
+local SCANNER_FOLDER = BASE_FOLDER .. "/Scanner"
+
+if not isfolder(BASE_FOLDER) then makefolder(BASE_FOLDER) end
+if not isfolder(SCANNER_FOLDER) then makefolder(SCANNER_FOLDER) end
+
+-- 2. Mengambil Nama Game Otomatis (Dengan Sanitizer Baru)
+local success, gameInfo = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+
+local folderGameName = "Game_" .. tostring(game.PlaceId)
+if success and gameInfo and gameInfo.Name then
+    local safeName = sanitizeString(gameInfo.Name)
+    folderGameName = string.sub(safeName, 1, 40) -- Potong agar tidak terlalu panjang
+end
+
+local DUMP_FOLDER = SCANNER_FOLDER .. "/" .. folderGameName
+if not isfolder(DUMP_FOLDER) then makefolder(DUMP_FOLDER) end
+
+-- Fungsi Notifikasi
+local function notify(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 5
+    })
+end
+
+-- 3. Fungsi Utama Dumping Script
+local function dumpScript(scriptObj, targetFolder)
+    if not (scriptObj:IsA("LocalScript") or scriptObj:IsA("ModuleScript")) then return end
+    
+    local successDecompile, sourceCode = pcall(function()
+        return decompile(scriptObj)
+    end)
+    
+    local subFolderPath = DUMP_FOLDER .. "/" .. targetFolder
+    
+    if successDecompile and type(sourceCode) == "string" and sourceCode ~= "" then
+        local header = "-- MIGII DUMPER v4.2\n"
+        header = header .. "-- Service: " .. targetFolder .. "\n"
+        header = header .. "-- Path: " .. scriptObj:GetFullName() .. "\n\n"
+        
+        -- Bersihkan nama script dari emoji/simbol aneh juga
+        local safeFileName = sanitizeString(scriptObj.Name) .. ".lua"
+        
+        writefile(subFolderPath .. "/" .. safeFileName, header .. sourceCode)
+        totalFilesScanned = totalFilesScanned + 1
+    else
+        totalFailed = totalFailed + 1
+        table.insert(failedLogs, "[FAILED] Name: " .. scriptObj.Name .. " | Path: " .. scriptObj:GetFullName())
+    end
+end
+
+-- 4. Fungsi Dumping Object Logs
+local serviceLogs = {}
+local function dumpObject(obj, targetFolder)
+    if not serviceLogs[targetFolder] then serviceLogs[targetFolder] = {"-- MIGII OBJECT LOGS --\n"} end
+    
+    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+        table.insert(serviceLogs[targetFolder], "[REMOTE] " .. obj.ClassName .. " | Name: " .. obj.Name .. " | Path: " .. obj:GetFullName())
+    elseif obj:IsA("ProximityPrompt") then
+        table.insert(serviceLogs[targetFolder], "[PROX] Name: " .. obj.Name .. " | Action: " .. tostring(obj.ActionText) .. " | Path: " .. obj:GetFullName())
+    elseif obj:IsA("ValueBase") then
+        table.insert(serviceLogs[targetFolder], "[VALUE] " .. obj.ClassName .. " | Name: " .. obj.Name .. " | Val: " .. tostring(obj.Value))
+    end
+end
+
+-- 5. Eksekusi Scan Area Standar
+local scanAreas = {
+    ["Workspace"] = game:GetService("Workspace"),
+    ["ReplicatedStorage"] = game:GetService("ReplicatedStorage"),
+    ["StarterGui"] = game:GetService("StarterGui"),
+    ["StarterPack"] = game:GetService("StarterPack"),
+    ["LocalPlayer"] = game:GetService("Players").LocalPlayer
+}
+
+notify("Migii Dumper", "Memulai scanning " .. folderGameName .. "...")
+
+for folderName, service in pairs(scanAreas) do
+    if service then
+        -- Buat sub-folder sebelum scan dimulai
+        local subFolderPath = DUMP_FOLDER .. "/" .. folderName
+        if not isfolder(subFolderPath) then makefolder(subFolderPath) end
+
+        for _, obj in ipairs(service:GetDescendants()) do
+            dumpScript(obj, folderName)
+            dumpObject(obj, folderName)
+        end
+        
+        -- Simpan log objek
+        if serviceLogs[folderName] and #serviceLogs[folderName] > 1 then
+            writefile(subFolderPath .. "/_Object_Logs.txt", table.concat(serviceLogs[folderName], "\n"))
+        end
+    end
+end
+
+-- 6. Scan Area Tersembunyi (Nil Instances)
+if getnilinstances then
+    print("Migii Dumper | Menjelajahi Nil Instances...")
+    local nilFolder = "Hidden_NilInstances"
+    
+    local nilFolderPath = DUMP_FOLDER .. "/" .. nilFolder
+    if not isfolder(nilFolderPath) then makefolder(nilFolderPath) end
+
+    for _, obj in ipairs(getnilinstances()) do
+        dumpScript(obj, nilFolder)
+        dumpObject(obj, nilFolder)
+    end
+    if serviceLogs[nilFolder] and #serviceLogs[nilFolder] > 1 then
+        writefile(nilFolderPath .. "/_Object_Logs.txt", table.concat(serviceLogs[nilFolder], "\n"))
+    end
+end
+
+-- 7. Finalisasi File Gagal
+if totalFailed > 0 then
+    writefile(DUMP_FOLDER .. "/_Failed_Decompiles.txt", table.concat(failedLogs, "\n"))
+end
+
+-- 8. Selesai
+notify("Scan Selesai!", "Berhasil: " .. totalFilesScanned .. " | Gagal: " .. totalFailed)
+print("Migii Dumper | Selesai! Cek folder MigiiHub/Scanner/" .. folderGameName)
