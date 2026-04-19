@@ -1,34 +1,184 @@
 -- ==========================================
--- INDO HANGOUT FEAUTURE
+-- INDO HANGOUT FITUR
 -- ==========================================
-​🌟 MigiiHUB - ​MigiiHUB adalah script serbaguna dengan UI modern, cocok untuk farming, trolling, hingga membuat video cinematic kelas atas.
+Auto Farming
+• Auto Catch
+• Auto Sell Fish
+• Auto Buy Rod
 
-​✨ Fitur Utama
-​🎨 UI & Visual
-​Modern UI UI Library dengan animasi RGB Outline.
-​Draggable UI (Bisa digeser bebas).
-​Toast Notification (Notifikasi rapi di pojok bawah).
-​🎣 Auto Farming
-​Auto Catch (Presisi 100%).
-​Auto Sell Fish (Pilihan: Jual Semua, <50kg, <100kg, <400kg, <600kg).
-​Auto Buy Rod dari manapun.
-​🕵️ Trolling & Utility
-​Universal Tool Stealer (Curi item unik dari inventory player lain).
-​1-Click Copy Avatar (Tembus server/bisa dilihat orang lain).
-​Avatar History (Simpan & Load avatar yang pernah di-copy).
-​🚀 Teleport & Spectate
-​Teleport ke Sell Fish & Rod Shop.
-​Teleport ke 7 Spot Mancing rahasia.
-​Teleport & Spectate Player lain.
-​🎥 Freecam Ultra Pro (Terintegrasi)
-​Seamless Camera (Kamera tidak loncat saat diaktifkan).
-​Cinematic Mode (Pergerakan super smooth & Camera Shake).
-​Visual Filters (Cinematic, Vibrant, Noir).
-​Custom Speed & Zoom Sliders.
-​📍 Cinematic Waypoints Manager
-​Buat jalur animasi kamera sendiri.
-​Fitur Undo, Redo, & Loop.
-​Auto Presets: Otomatis buat jalur 360° Spin, Drone Shot, Spiral Up, & Flyby.
-​Save/Load Preset Waypoint ke file PC/HP kamu.
-​Immersive Mode: Semua UI otomatis hilang saat merekam/memutar animasi jalur.
+Trolling & Utility
+• Universal Tool Stealer
+• 1-Click Copy Avatar
+• Avatar History
 
+Teleport & Spectate
+• Teleport Sell Fish & Rod Shop
+• Teleport Fishing Spots
+• Teleport & Spectate Player
+
+Freecam Ultra Pro
+• Seamless Camera
+• Cinematic Mode
+• Visual Filters
+• Custom Speed & Zoom Sliders
+
+Cinematic Waypoints Manager
+• Custom Camera Path
+• Undo, Redo, & Loop
+• Auto Presets
+• Save & Load Preset
+• Immersive Mode
+
+-- ==========================================
+-- DANCE NOW FITUR
+-- ==========================================
+Security
+• Anti-Cheat Bypass (Block SyncTelemetry)
+
+Minigame: Sambung Kata
+• Auto Sambung Kata (Integrasi Kamus KBBI)
+• Adjustable Typing Delay
+• Auto-Correction & Retry
+
+Classic Mode
+• Auto Anti-Miss
+• Auto Beat
+• Auto Arrow Typing
+• Target Score Selector (Perfect/Cool/Bad/Miss)
+• Floating Manual Arrow Button
+• Adjustable Arrow Delay & Typing Speed
+
+Piano Mode
+• Auto Piano Tap & Hold (Support 4 dan 6 Keys)
+• Target Score Selector
+
+Bubble Mode
+• Auto Bubble
+• Auto Anti-Miss
+• Target Score Selector
+• Adjustable Hit Margin
+
+-- ==========================================
+-- SAMBUNG KATA FITUR
+-- ==========================================
+Mode Sambung Kata
+• AutoPlay Mode
+• Manual Assist Mode (Panel Sugesti)
+• Hard Mode (Prioritas akhiran kata susah)
+• Reset Word Memory (Manual)
+
+Pengaturan Kecepatan
+• Adjustable Typing Speed
+• Adjustable Start Delay
+
+Informasi & Visual
+• Live Match Indicator Panel
+• Word Suggestion Panel (4 Pilihan Kata)
+• Auto-Delete Wrong Words
+
+Sistem & Engine
+• Multi-Source Dictionary Loader (Anti-Lag)
+• Keyboard Simulation Engine
+• Full Kill Switch & UI Wiper
+
+-- ==========================================
+-- DESA RAYAP FITUR
+-- ==========================================
+Dashboard & System
+• Live Farm Tracker
+• Discord Webhook Integration (Customizable URL)
+• Auto-Reset Statistics
+
+Auto Farm
+• Auto Farm Besi (Specific Target Selector / Terdekat)
+• Auto Farm Belut
+
+Pertanian (Agriculture)
+• Auto Plant Single Seed & Multi-Seed
+• Custom Plant Patterns (Grid, Lingkaran, Menumpuk)
+• Adjustable Plant Limit & Spacing
+• Auto Harvest (Radius Sekitar & Teleport)
+• Auto Buy Bibit
+• Auto Sell Hasil Tani
+
+Fishing
+• Auto Cast (Adjustable Cast Power)
+• Auto Tangkap Ikan (Auto Win Minigame)
+• Adjustable Minigame Delay
+
+Avatar Modifier
+• 1-Click Copy Player Avatar (Bypass Server)
+• Avatar History Manager (Save & Load)
+• Restore Original Avatar & Refresh Character
+
+Teleport & Spectate
+• Teleport ke Semua Toko
+• Teleport ke Lahan Tani
+• Teleport ke Spot Mancing (Kolam)
+• Teleport ke Player Lain
+• Spectate View Player Lain
+
+Shop & Sell
+• Auto/Manual Jual Besi
+• Auto/Manual Jual Belut
+• Auto/Manual Jual Ikan
+• Beli Pancingan & Gergaji Langsung dari UI
+
+Visuals & Security
+• Streamer Mode / Hide Mode (Fake Nickname & Fake Level)
+• Custom RGB Title Bar (Di atas kepala)
+• Custom ESP (Menampilkan nama item & status cooldown)
+• Auto Return (Otomatis kembali ke lokasi mati & equip tool)
+
+-- ==========================================
+-- SAWAH INDO FITUR
+-- ==========================================
+Sistem UI & Dashboard
+• MigiiHUB Library V2 (Support UI Themes)
+• Floating Monitor Panel (Global, Tanaman, Hewan, Inventory)
+• Show/Hide Custom Logo Button
+• Auto Confirm UI (Static GUI Bypass)
+
+Kaitun (Auto Farming Pintar)
+• 4 Mode Kaitun (All In, Lahan Besar & Biasa, +Ayam, Lahan Biasa Only)
+• Auto Claim & Urus Lahan Besar (Tanam & Panen Sawit/Durian)
+• Auto Claim & Urus Kandang Ayam (Ambil Telur & Kasih Makan)
+• Auto Claim & Urus Kandang Sapi (Ambil Susu & Kasih Makan)
+• Dukungan Pemilihan Level Kandang Sapi (Level 1-5)
+• Auto Eksekusi Lahan Private (Area Ayam & Sapi)
+• Auto Sell Hasil Kaitun by Rarity (Telur, Susu, Durian, Sawit)
+• Set Lahan Biasa Permanen & Scan Bibit Otomatis
+
+Stand Alone Auto
+• Auto Claim Lahan Besar, Kandang Ayam & Sapi
+• Auto Collect & Feed Hewan Ternak
+• Auto Plant Lahan Biasa & Lahan Besar
+• Auto Harvest (Radius Sekitar & Teleport)
+• Auto Sell Stand Alone (Filter Rarity atau Jual Semua Instan)
+
+Shop & Storage
+• Insta-Buy Bibit via UI (Maks 99, Langsung Masuk Tas)
+• Insta-Sell Panen via UI (Dilengkapi Profit Tracker)
+• Buka Storage/Bank Jarak Jauh
+
+Teleportasi & Lokasi
+• Save, Load, & Delete Custom Waypoints
+• Teleport ke Seluruh Lahan (Biasa, Besar, Private)
+• Teleport ke Seluruh Kandang (Ayam, Sapi)
+• Teleport ke Seluruh NPC Shop & Area Publik
+• Teleport ke Player Lain (Player Sniper)
+
+ETC Fitur (Utilitas & Troll)
+• Manual/Auto Sleep (Teleport Instan ke Kasur Kosong)
+• Mandi Instan (Teleport ke Bilik Mandi Kosong)
+• Pakai Aksesoris Map & Item Event Shope Collab
+• Troll Drop Item (Auto Drop Payung & Layang-layang)
+
+Visuals, Security & Logging
+• Mode Hide / Streamer Mode (Ganti Nickname & Level Palsu)
+• Mode Terang / Fullbright (Anti Gelap Malam)
+• Advanced ESP (Tampilkan Timer & Status Tanaman/Hewan)
+• Discord Webhook Sync (Live Report Dashboard ke Discord)
+• Auto Return Death & Auto Load Reconnect
+• Full Kill Switch (Membersihkan sisa script & UI dari layar)
+• Spy to Clipboard (Deteksi Path Prompt)
