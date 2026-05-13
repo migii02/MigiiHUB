@@ -4,9 +4,11 @@ support game
   - Sawah indo
   - Dance now
   - Indo Hangout
+  - Huruf terakhir
   - Desa rayap
   - Sambung kata
   - Violent district
+  - all mount auto walk
 
 
 untuk fitur fitur game ini bisa di liat [disini](https://migii02.github.io/migiiweb/)
